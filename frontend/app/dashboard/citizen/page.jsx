@@ -6,8 +6,10 @@ import {
   MapPin, Search, Bell, User, LogOut, Menu, X,
   Hospital, GraduationCap, Droplets, Bus, Leaf,
   ShoppingBag, Map as MapIcon, Home, FileText, Settings,
-  CheckCircle, Clock} from "lucide-react"
+  CheckCircle, Clock
+} from "lucide-react"
 import ReportIssueForm from "@/components/ReportIssueForm"
+import toast from "react-hot-toast"
 /* -------------------- DATA -------------------- */
 
 const categories = [
@@ -65,30 +67,44 @@ export default function CitizenDashboard() {
     )
   }, [])
   useEffect(() => {
-  if (!userLocation) return
+    if (!userLocation) return
 
-  fetch("http://localhost:8000/check-location", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      user_lat: userLocation.lat,
-      user_lon: userLocation.lng
+    fetch("http://localhost:8000/check-location", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_lat: userLocation.lat,
+        user_lon: userLocation.lng
+      })
     })
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Geo Result:", data)
-      setGeoResult(data)
-    })
-    .catch(err => console.error(err))
+      .then(res => res.json())
+      .then(data => {
+        console.log("Geo Result:", data)
+        setGeoResult(data)
 
-}, [userLocation])
+        if (data.inside && data.projects?.length > 0) {
+          data.projects.forEach((p) => {
+            toast.success(`📍 ${p.name}`, {
+              description: p.description,
+              duration: 5000,
+              style: {
+                background: "#0f172a",
+                color: "#22c55e",
+                border: "1px solid #22c55e"
+              }
+            })
+          })
+        }
+      })
+      .catch(err => console.error(err))
+
+  }, [userLocation])
 
   const places = nearbyPlaces[selectedCategory] || []
   const CategoryIcon =
-  categories.find(c => c.id === selectedCategory)?.icon || Hospital
+    categories.find(c => c.id === selectedCategory)?.icon || Hospital
 
   return (
     <div className="h-screen flex flex-col">
@@ -116,57 +132,52 @@ export default function CitizenDashboard() {
         {/* ---------------- SIDEBAR ---------------- */}
         {sidebarOpen && (
           <aside className="w-64 border-r p-4 space-y-2">
-             <nav className="space-y-1">
-            <button   onClick={() => setActiveView("dashboard")}  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === "dashboard"
-                    ? "bg-cyan-500/10 text-cyan-400"
-                    : "text-muted-foreground hover:bg-muted"
+            <nav className="space-y-1">
+              <button onClick={() => setActiveView("dashboard")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "dashboard"
+                ? "bg-cyan-500/10 text-cyan-400"
+                : "text-muted-foreground hover:bg-muted"
                 }`} >
-              <Home /> Dashboard
-            </button>
+                <Home /> Dashboard
+              </button>
 
-        <button
-  onClick={() => setActiveView("complaint")}
-  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === "complaint"
-                    ? "bg-cyan-500/10 text-cyan-400"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
->
-  <FileText /> Complaints
-</button>
-<button
-  onClick={() => setActiveView("map")}
-  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === "map"
-                    ? "bg-cyan-500/10 text-cyan-400"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
->
-  <MapIcon /> Map
-</button>
+              <button
+                onClick={() => setActiveView("complaint")}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "complaint"
+                  ? "bg-cyan-500/10 text-cyan-400"
+                  : "text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                <FileText /> Complaints
+              </button>
+              <button
+                onClick={() => setActiveView("map")}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "map"
+                  ? "bg-cyan-500/10 text-cyan-400"
+                  : "text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                <MapIcon /> Map
+              </button>
 
-            <button
-              onClick={() => {
-                setActiveView("zones")
-              }}
-               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === "zones"
-                    ? "bg-cyan-500/10 text-cyan-400"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-            >
-              <MapIcon /> Development Zones
-            </button>
+              <button
+                onClick={() => {
+                  setActiveView("zones")
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "zones"
+                  ? "bg-cyan-500/10 text-cyan-400"
+                  : "text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                <MapIcon /> Development Zones
+              </button>
 
-            <button  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === "setting"
-                    ? "bg-cyan-500/10 text-cyan-400"
-                    : "text-muted-foreground hover:bg-muted"
+              <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "setting"
+                ? "bg-cyan-500/10 text-cyan-400"
+                : "text-muted-foreground hover:bg-muted"
                 }`}>
-              <Settings /> Settings
-            </button>
-                </nav>
+                <Settings /> Settings
+              </button>
+            </nav>
             {/* Categories */}
             <div className="mt-6">
               <p className="text-sm mb-2">Nearby</p>
@@ -177,11 +188,10 @@ export default function CitizenDashboard() {
                     setSelectedCategory(cat.id)
                     setActiveView("places")
                   }}
-                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeView === `${cat.id}`
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === `${cat.id}`
                     ? "bg-cyan-500/10 text-cyan-400"
                     : "text-muted-foreground hover:bg-muted"
-                }`}
+                    }`}
                 >
                   <cat.icon /> {cat.name}
                 </button>
@@ -191,229 +201,231 @@ export default function CitizenDashboard() {
         )}
 
         {/* ---------------- MAIN ---------------- */}
-     <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto">
 
-  {/* ================= DASHBOARD ================= */}
- {activeView === "dashboard" && (
-  <>
-  {geoResult?.inside && (
-  <div className="mb-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500">
-    <p className="font-semibold text-emerald-400">
-      📍 You are near a development site
-    </p>
+          {/* ================= DASHBOARD ================= */}
+          {activeView === "dashboard" && (
+            <>
+              {geoResult?.inside && geoResult.projects?.length > 0 && (
+                <div className="mb-4 p-4 rounded-xl border border-emerald-500 bg-emerald-500/10">
+                  <p className="text-emerald-400 font-semibold mb-2">
+                    📍 Nearby Development Projects
+                  </p>
 
-    {geoResult.projects?.map((p, i) => (
-      <div key={i} className="text-sm mt-1">
-        <p><b>{p.name}</b></p>
-        <p className="text-muted-foreground">{p.description}</p>
-      </div>
-    ))}
-  </div>
-)}
-    {/* HEADER */}
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Citizen Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Explore services and report issues in your area
-        </p>
-      </div>
+                  {geoResult.projects.map((p, i) => (
+                    <div key={i} className="text-sm mb-1">
+                      <p><b>{p.name}</b></p>
+                      <p classname ="front-semibold">{p.name}</p>
+                      <p className="text-gray-400">{p.description}</p>
+                      
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* HEADER */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    Citizen Dashboard
+                  </h1>
+                  <p className="text-muted-foreground mt-1">
+                    Explore services and report issues in your area
+                  </p>
+                </div>
 
-      <button
-        onClick={() => setActiveView("map")}
-        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl"
-      >
-        <MapIcon className="w-5 h-5" />
-        Open Map
-      </button>
-    </div>
-
-    {/* STATS */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {[
-        { label: "Nearby Places", value: "20+", icon: MapPin },
-        { label: "Complaints", value: "5", icon: FileText },
-        { label: "Resolved", value: "3", icon: CheckCircle },
-        { label: "Pending", value: "2", icon: Clock },
-      ].map((stat, i) => {
-        const Icon = stat.icon
-        return (
-          <div key={i} className="bg-card border rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-muted">
-                <Icon className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-
-    {/* MAIN GRID */}
-    <div className="grid lg:grid-cols-2 gap-6">
-
-      {/* Nearby Services */}
-      <div className="bg-card border rounded-xl p-5">
-        <h3 className="text-lg font-semibold mb-4">
-          Nearby Services
-        </h3>
-
-        <div className="space-y-3">
-          {places.slice(0, 3).map((place) => (
-            <div
-              key={place.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
-            >
-              <MapPin className="w-4 h-4 text-cyan-400" />
-
-              <div className="flex-1">
-                <p className="text-sm font-medium">{place.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {place.distance}
-                </p>
+                <button
+                  onClick={() => setActiveView("map")}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl"
+                >
+                  <MapIcon className="w-5 h-5" />
+                  Open Map
+                </button>
               </div>
 
-              <button
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps/search/?api=1&query=${place.name}`
+              {/* STATS */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {[
+                  { label: "Nearby Places", value: "20+", icon: MapPin },
+                  { label: "Complaints", value: "5", icon: FileText },
+                  { label: "Resolved", value: "3", icon: CheckCircle },
+                  { label: "Pending", value: "2", icon: Clock },
+                ].map((stat, i) => {
+                  const Icon = stat.icon
+                  return (
+                    <div key={i} className="bg-card border rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted">
+                          <Icon className="w-5 h-5 text-cyan-400" />
+                        </div>
+                        <div>
+                          <p className="text-xl font-bold">{stat.value}</p>
+                          <p className="text-xs text-muted-foreground">{stat.label}</p>
+                        </div>
+                      </div>
+                    </div>
                   )
-                }
-                className="text-xs text-cyan-400"
-              >
-                View
-              </button>
+                })}
+              </div>
+
+              {/* MAIN GRID */}
+              <div className="grid lg:grid-cols-2 gap-6">
+
+                {/* Nearby Services */}
+                <div className="bg-card border rounded-xl p-5">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Nearby Services
+                  </h3>
+
+                  <div className="space-y-3">
+                    {places.slice(0, 3).map((place) => (
+                      <div
+                        key={place.id}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+                      >
+                        <MapPin className="w-4 h-4 text-cyan-400" />
+
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{place.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {place.distance}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            window.open(
+                              `https://www.google.com/maps/search/?api=1&query=${place.name}`
+                            )
+                          }
+                          className="text-xs text-cyan-400"
+                        >
+                          View
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recent Complaints */}
+                <div className="bg-card border rounded-xl p-5">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Your Complaints
+                  </h3>
+
+                  <div className="space-y-3">
+                    {[
+                      { title: "Water issue", status: "pending" },
+                      { title: "Garbage issue", status: "resolved" },
+                    ].map((c, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <p className="text-sm">{c.title}</p>
+
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${c.status === "resolved"
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-amber-500/20 text-amber-400"
+                            }`}
+                        >
+                          {c.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </>
+          )}
+          {/* ================= MAP ================= */}
+          {activeView === "map" && (
+            <div className="h-[500px] rounded-xl overflow-hidden border">
+              <CitizenMapView userLocation={userLocation} />
             </div>
-          ))}
-        </div>
-      </div>
+          )}
 
-      {/* Recent Complaints */}
-      <div className="bg-card border rounded-xl p-5">
-        <h3 className="text-lg font-semibold mb-4">
-          Your Complaints
-        </h3>
+          {/* ================= COMPLAINT ================= */}
+          {activeView === "complaint" && (
+            <ReportIssueForm userLocation={userLocation} />
+          )}
 
-        <div className="space-y-3">
-          {[
-            { title: "Water issue", status: "pending" },
-            { title: "Garbage issue", status: "resolved" },
-          ].map((c, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-            >
-              <p className="text-sm">{c.title}</p>
+          {/* ================= ZONES ================= */}
+          {activeView === "zones" && (
+            <>
+              <h1 className="text-2xl font-bold mb-4">Development Zones</h1>
 
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  c.status === "resolved"
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "bg-amber-500/20 text-amber-400"
-                }`}
-              >
-                {c.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {developmentZones.map((zone) => (
+                  <div
+                    key={zone.id}
+                    className="bg-card border rounded-xl p-5"
+                  >
+                    <h3 className="font-semibold">{zone.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {zone.description}
+                    </p>
 
-    </div>
-  </>
-)}
-  {/* ================= MAP ================= */}
-  {activeView === "map" && (
-    <div className="h-[500px] rounded-xl overflow-hidden border">
-      <CitizenMapView userLocation={userLocation} />
-    </div>
-  )}
+                    <div className="mt-3 h-2 bg-muted rounded">
+                      <div
+                        className="h-full bg-cyan-500"
+                        style={{ width: `${zone.progress}%` }}
+                      />
+                    </div>
 
-  {/* ================= COMPLAINT ================= */}
-  {activeView === "complaint" && (
-    <ReportIssueForm userLocation={userLocation} />
-  )}
+                    <p className="text-xs mt-2">{zone.progress}% completed</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-  {/* ================= ZONES ================= */}
-  {activeView === "zones" && (
-    <>
-      <h1 className="text-2xl font-bold mb-4">Development Zones</h1>
+          {/* ================= PLACES ================= */}
+          {activeView === "places" && (
+            <>
+              <h1 className="text-2xl font-bold mb-4">
+                Nearby {categories.find(c => c.id === selectedCategory)?.name}
+              </h1>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {developmentZones.map((zone) => (
-          <div
-            key={zone.id}
-            className="bg-card border rounded-xl p-5"
-          >
-            <h3 className="font-semibold">{zone.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {zone.description}
-            </p>
+              {/* Search */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-3 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search places..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 p-2 border rounded"
+                />
+              </div>
 
-            <div className="mt-3 h-2 bg-muted rounded">
-              <div
-                className="h-full bg-cyan-500"
-                style={{ width: `${zone.progress}%` }}
-              />
-            </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {places.map((place) => (
+                  <div key={place.id} className="p-4 border rounded-xl">
+                    <h3>{place.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {place.distance}
+                    </p>
 
-            <p className="text-xs mt-2">{zone.progress}% completed</p>
-          </div>
-        ))}
-      </div>
-    </>
-  )}
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `https://www.google.com/maps/search/?api=1&query=${place.name}`
+                        )
+                      }
+                      className="mt-3 text-sm text-blue-500"
+                    >
+                      Get Directions
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-  {/* ================= PLACES ================= */}
-  {activeView === "places" && (
-    <>
-      <h1 className="text-2xl font-bold mb-4">
-        Nearby {categories.find(c => c.id === selectedCategory)?.name}
-      </h1>
-
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-3 w-4 h-4" />
-        <input
-          type="text"
-          placeholder="Search places..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 p-2 border rounded"
-        />
-      </div>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {places.map((place) => (
-          <div key={place.id} className="p-4 border rounded-xl">
-            <h3>{place.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {place.distance}
-            </p>
-
-            <button
-              onClick={() =>
-                window.open(
-                  `https://www.google.com/maps/search/?api=1&query=${place.name}`
-                )
-              }
-              className="mt-3 text-sm text-blue-500"
-            >
-              Get Directions
-            </button>
-          </div>
-        ))}
-      </div>
-    </>
-  )}
-
-</main>
+        </main>
       </div>
     </div>
   )
