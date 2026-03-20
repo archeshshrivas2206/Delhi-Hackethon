@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import {ThemeProvider} from '@/components/theme-provider' 
 import { Toaster } from "react-hot-toast"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
@@ -13,8 +14,16 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+        >
+          {children}
+        </ThemeProvider>
+        
         <Toaster position="top-right" />
         {children}
         <Analytics />

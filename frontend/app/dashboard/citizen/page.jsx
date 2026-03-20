@@ -51,6 +51,12 @@ export default function CitizenDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [userLocation, setUserLocation] = useState(null)
   const [geoResult, setGeoResult] = useState(null)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: "Complaint resolved", read: false },
+    { id: 2, text: "New project near you", read: false }
+  ])
 
   /* -------------------- LOCATION -------------------- */
   useEffect(() => {
@@ -118,12 +124,78 @@ export default function CitizenDashboard() {
           <span className="font-bold">CivicGov</span>
         </div>
 
-        <div className="flex gap-3">
-          <Bell />
-          <User />
+        <div className="flex gap-3 relative">
+
+          {/* 🔔 Notification Button */}
+          <button onClick={() => {
+            setShowNotifications(!showNotifications)
+            setShowProfileMenu(false)
+          }}>
+            <Bell />
+          </button>
+
+          {/* 👤 Profile Button */}
+          <button onClick={() => {
+            setShowProfileMenu(!showProfileMenu)
+            setShowNotifications(false)
+          }}>
+            <User />
+          </button>
           <button onClick={() => router.push("/login")}>
             <LogOut />
           </button>
+          {showNotifications && (
+            <div className="absolute right-12 top-10 w-72 bg-card border rounded-xl shadow-lg p-4 z-50">
+              <h4 className="font-semibold mb-2">Notifications</h4>
+
+              <div className="space-y-2 text-sm">
+                {notifications.length === 0 ? (
+                  <p className="text-muted-foreground">No notifications</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="p-2 rounded hover:bg-muted transition"
+                    >
+                      {n.text}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+          {showProfileMenu && (
+            <div className="absolute right-0 top-10 w-56 bg-card border rounded-xl shadow-lg p-3 z-50">
+
+              <p className="font-semibold">Abhinav</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                abhinav@email.com
+              </p>
+
+              <div className="space-y-2">
+                <button
+                  onClick={() => setActiveView("profile")}
+                  className="w-full text-left text-sm hover:bg-muted p-2 rounded"
+                >
+                  View Profile
+                </button>
+
+                <button
+                  onClick={() => setActiveView("setting")}
+                  className="w-full text-left text-sm hover:bg-muted p-2 rounded"
+                >
+                  Settings
+                </button>
+
+                <button
+                  onClick={() => router.push("/login")}
+                  className="w-full text-left text-sm text-red-400 hover:bg-muted p-2 rounded"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -201,7 +273,19 @@ export default function CitizenDashboard() {
         )}
 
         {/* ---------------- MAIN ---------------- */}
+
         <main className="flex-1 p-6 overflow-auto">
+          {activeView === "profile" && (
+            <div className="max-w-xl mx-auto bg-card border rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-4">My Profile</h2>
+
+              <div className="space-y-3">
+                <p><b>Name:</b> Abhinav</p>
+                <p><b>Email:</b> abhinav@email.com</p>
+                <p><b>Location:</b> {userLocation?.lat}, {userLocation?.lng}</p>
+              </div>
+            </div>
+          )}
 
           {/* ================= DASHBOARD ================= */}
           {activeView === "dashboard" && (
@@ -215,14 +299,14 @@ export default function CitizenDashboard() {
                   {geoResult.projects.map((p, i) => (
                     <div key={i} className="text-sm mb-1">
                       <p><b>{p.name}</b></p>
-                      <p classname ="front-semibold">{p.name}</p>
+                      <p classname="front-semibold">{p.name}</p>
                       <p className="text-gray-400">{p.description}</p>
-                      
+
                     </div>
                   ))}
                 </div>
               )}
-              
+
               {/* HEADER */}
               <div className="flex items-center justify-between mb-6">
                 <div>
