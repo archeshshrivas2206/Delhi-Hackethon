@@ -298,8 +298,7 @@ export default function CitizenDashboard() {
 
                   {geoResult.projects.map((p, i) => (
                     <div key={i} className="text-sm mb-1">
-                      <p><b>{p.name}</b></p>
-                      <p classname="front-semibold">{p.name}</p>
+                      <p className="font-semibold">{p.name}</p>
                       <p className="text-gray-400">{p.description}</p>
 
                     </div>
