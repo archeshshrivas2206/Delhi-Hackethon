@@ -17,33 +17,47 @@ class LocationRequest(BaseModel):
 def check_location(data: LocationRequest):
     user_lat = data.user_lat
     user_lon = data.user_lon
+    print(f"[INFO] User location: {user_lat}, {user_lon}")
 
     #  TEMPORARY DATA (replace DB)
     projects = [
-        {
+    {
+        "id": 1,
         "name": "Smart City Development - Your Area",
         "description": "Road upgrade & drainage system improved",
-        "lat": user_lat,   # SAME AS USER
-        "lon": user_lon
+        "lat": user_lat,
+        "lon": user_lon,
+        "radius": 2000
     },
-        {
-            "name": "Metro Bridge Project",
-            "description": "New flyover completed",
-            "lat": 28.6139,
-            "lon": 77.2090
-        }
-    ]
+    {
+        "id": 2,
+        "name": "Metro Infrastructure Upgrade",
+        "description": "New metro line construction in progress",
+        "lat": user_lat + 0.01,
+        "lon": user_lon + 0.01,
+        "radius": 3000
+    }
+]
 
     results = []
 
     for project in projects:
-        if is_inside_geofence(user_lat, user_lon, project["lat"], project["lon"]):
+        if is_inside_geofence(
+    user_lat,
+    user_lon,
+    project["lat"],
+    project["lon"],
+    project["radius"]
+):
             results.append({
                 "name": project["name"],
                 "description": project["description"]
             })
 
     return {
-        "inside": len(results) > 0,
-        "projects": results
-    }
+    "status": "success",
+    "inside": len(results) > 0,
+    "count": len(results),
+    "projects": results,
+    "message": "Nearby development detected" if len(results) > 0 else "No nearby projects"
+}

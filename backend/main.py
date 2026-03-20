@@ -6,6 +6,7 @@ from routes import geofence
 from fastapi.middleware.cors import CORSMiddleware
 
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -21,5 +22,5 @@ app.add_middleware(
 def home():
     return {"message": "Backend Running 🚀"}
 
-app.include_router(project.router)
-app.include_router(geofence.router)
+app.include_router(project.router, prefix="/api")
+app.include_router(geofence.router, prefix="/api")

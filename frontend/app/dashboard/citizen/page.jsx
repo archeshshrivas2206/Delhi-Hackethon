@@ -75,7 +75,7 @@ export default function CitizenDashboard() {
   useEffect(() => {
     if (!userLocation) return
 
-    fetch("http://localhost:8000/check-location", {
+    fetch("http://localhost:8000/api/check-location", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
