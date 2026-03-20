@@ -21,11 +21,10 @@ export default function RootLayout({ children }) {
           defaultTheme="light"
           enableSystem={false}
         >
-          {children}
+          {children}   {/* ✅ ONLY ONCE */}
         </ThemeProvider>
-        
+
         <Toaster position="top-right" />
-        {children}
         <Analytics />
       </body>
     </html>
