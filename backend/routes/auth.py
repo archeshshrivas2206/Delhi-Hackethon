@@ -1,12 +1,61 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from utils.auth import create_access_token
 from database.db import SessionLocal
-from models.login_log import LoginLog
+from models.user import User
+from utils.auth import create_access_token
+from passlib.context import CryptContext
 
 router = APIRouter()
 
-# ✅ Request schema
+# 🔐 password hashing setup
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(plain, hashed):
+    return pwd_context.verify(plain, hashed)
+
+# =========================
+# ✅ REGISTER
+# =========================
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    user_type: str
+
+
+@router.post("/register")
+def register(data: RegisterRequest):
+    db = SessionLocal()
+
+    # check if user already exists
+    existing_user = db.query(User).filter(User.email == data.email).first()
+    if existing_user:
+        db.close()
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    # create new user
+    new_user = User(
+        name=data.name,
+        email=data.email,
+        password=hash_password(data.password),  # 🔐 hashed
+        user_type=data.user_type
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.close()
+
+    return {"message": "User registered successfully"}
+
+
+# =========================
+# ✅ LOGIN
+# =========================
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -16,26 +65,25 @@ class LoginRequest(BaseModel):
 def login(data: LoginRequest):
     db = SessionLocal()
 
-    # 🔥 TEMP USER (replace later with real DB user)
-    if data.email == "test@gmail.com" and data.password == "1234":
+    user = db.query(User).filter(User.email == data.email).first()
 
-        # ✅ create token
-        token = create_access_token({"sub": data.email})
-
-        # ✅ save login in DB
-        log = LoginLog(
-            email=data.email,
-            user_type="citizen"   # you can change later dynamically
-        )
-
-        db.add(log)
-        db.commit()
+    # ❌ user not found
+    if not user:
         db.close()
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        return {
-            "access_token": token,
-            "token_type": "bearer"
-        }
+    # ❌ wrong password
+    if not verify_password(data.password, user.password):
+        db.close()
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # ✅ generate JWT token
+    token = create_access_token({"sub": user.email})
 
     db.close()
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_type": user.user_type
+    }

@@ -57,16 +57,23 @@ export default function LoginPage() {
 
       if (!res.ok) throw new Error(data.detail)
 
-      // ✅ save token
+      
+     // ✅ save token
       localStorage.setItem("token", data.access_token)
 
-      // ✅ redirect AFTER success only
-      router.push(
-        userType === "citizen"
-          ? "/dashboard/citizen"
-          : "/dashboard/politician"
-      )
+      // ✅ save user
+      localStorage.setItem("user", JSON.stringify({
+        email: formData.email,
+        name: formData.email.split("@")[0]
+      }))
 
+
+      // ✅ redirect AFTER success only
+     router.push(
+  userType === "citizen"
+    ? "/dashboard/citizen"
+    : "/dashboard/politician"
+)
     } catch (err) {
       console.log("ERROR:", err)
       setError("Invalid credentials")
@@ -97,9 +104,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setUserType("citizen")}
-              className={`p-3 border rounded ${
-                userType === "citizen" ? "border-green-500" : ""
-              }`}
+              className={`p-3 border rounded ${userType === "citizen" ? "border-green-500" : ""
+                }`}
             >
               <User className="mx-auto mb-1" />
               Citizen
@@ -108,9 +114,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setUserType("politician")}
-              className={`p-3 border rounded ${
-                userType === "politician" ? "border-blue-500" : ""
-              }`}
+              className={`p-3 border rounded ${userType === "politician" ? "border-blue-500" : ""
+                }`}
             >
               <Building2 className="mx-auto mb-1" />
               Authority

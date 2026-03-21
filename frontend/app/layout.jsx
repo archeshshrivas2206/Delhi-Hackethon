@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import {ThemeProvider} from '@/components/theme-provider' 
 import { Toaster } from "react-hot-toast"
+import "leaflet/dist/leaflet.css"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })

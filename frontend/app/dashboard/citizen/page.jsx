@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import ReportIssueForm from "@/components/ReportIssueForm"
 import toast from "react-hot-toast"
+import MapView from "@/components/MapView"
 /* -------------------- DATA -------------------- */
 
 const categories = [
@@ -51,6 +52,7 @@ export default function CitizenDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [userLocation, setUserLocation] = useState(null)
   const [geoResult, setGeoResult] = useState(null)
+  const [user, setUser] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([
@@ -112,6 +114,13 @@ export default function CitizenDashboard() {
   const CategoryIcon =
     categories.find(c => c.id === selectedCategory)?.icon || Hospital
 
+    useEffect(() => {
+  const storedUser = localStorage.getItem("user")
+  if (storedUser) {
+    setUser(JSON.parse(storedUser))
+  }
+}, [])
+
   return (
     <div className="h-screen flex flex-col">
 
@@ -167,9 +176,11 @@ export default function CitizenDashboard() {
           {showProfileMenu && (
             <div className="absolute right-0 top-10 w-56 bg-card border rounded-xl shadow-lg p-3 z-50">
 
-              <p className="font-semibold">Abhinav</p>
+              <p className="font-semibold">
+                {user?.name || "Guest"}
+              </p>
               <p className="text-xs text-muted-foreground mb-3">
-                abhinav@email.com
+                {user?.email || "No email"}
               </p>
 
               <div className="space-y-2">
@@ -280,8 +291,8 @@ export default function CitizenDashboard() {
               <h2 className="text-xl font-bold mb-4">My Profile</h2>
 
               <div className="space-y-3">
-                <p><b>Name:</b> Abhinav</p>
-                <p><b>Email:</b> abhinav@email.com</p>
+                <p><b>Name:</b> {user?.name || "Guest"}</p>
+                <p><b>Email:</b> {user?.email || "No email"}</p>
                 <p><b>Location:</b> {userLocation?.lat}, {userLocation?.lng}</p>
               </div>
             </div>
@@ -426,10 +437,12 @@ export default function CitizenDashboard() {
           {/* ================= MAP ================= */}
           {activeView === "map" && (
             <div className="h-[500px] rounded-xl overflow-hidden border">
-              <CitizenMapView userLocation={userLocation} />
+              <MapView
+                userLocation={userLocation}
+                projects={geoResult?.projects}
+              />
             </div>
           )}
-
           {/* ================= COMPLAINT ================= */}
           {activeView === "complaint" && (
             <ReportIssueForm userLocation={userLocation} />
@@ -511,31 +524,5 @@ export default function CitizenDashboard() {
         </main>
       </div>
     </div>
-  )
-}
-function CitizenMapView({ selectedCategory, userLocation }) {
-  const queries = {
-    hospitals: "hospitals",
-    education: "schools",
-    toilets: "public toilets",
-    transport: "bus station metro",
-    parks: "parks",
-    markets: "markets",
-  }
-
-  const query = queries[selectedCategory] || "hospitals"
-
-  const location = userLocation
-    ? `${userLocation.lat},${userLocation.lng}`
-    : "28.6139,77.2090"
-
-  return (
-    <iframe
-      width="100%"
-      height="100%"
-      style={{ border: 0 }}
-      loading="lazy"
-      src={`https://www.google.com/maps?q=${query}&center=${location}&z=14&output=embed`}
-    />
   )
 }
