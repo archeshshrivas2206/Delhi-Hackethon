@@ -16,6 +16,7 @@ def hash_password(password: str):
 def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
 
+
 # =========================
 # ✅ REGISTER
 # =========================
@@ -31,25 +32,34 @@ class RegisterRequest(BaseModel):
 def register(data: RegisterRequest):
     db = SessionLocal()
 
-    # check if user already exists
-    existing_user = db.query(User).filter(User.email == data.email).first()
-    if existing_user:
+    try:
+        email = data.email.strip().lower()
+
+        # check if user already exists
+        existing_user = db.query(User).filter(User.email == email).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists")
+
+        # create new user
+        new_user = User(
+            name=data.name.strip(),
+            email=email,
+            password=hash_password(data.password.strip()),  # 🔐 hashed
+            user_type=data.user_type
+        )
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        return {"message": "User registered successfully"}
+
+    except Exception as e:
+        print("REGISTER ERROR:", e)
+        raise e
+
+    finally:
         db.close()
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    # create new user
-    new_user = User(
-        name=data.name,
-        email=data.email,
-        password=hash_password(data.password),  # 🔐 hashed
-        user_type=data.user_type
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.close()
-
-    return {"message": "User registered successfully"}
 
 
 # =========================
@@ -65,25 +75,31 @@ class LoginRequest(BaseModel):
 def login(data: LoginRequest):
     db = SessionLocal()
 
-    user = db.query(User).filter(User.email == data.email).first()
+    try:
+        email = data.email.strip().lower()
 
-    # ❌ user not found
-    if not user:
+        user = db.query(User).filter(User.email == email).first()
+
+        # ❌ user not found
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # ❌ wrong password (hashed check)
+        if not verify_password(data.password.strip(), user.password):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # ✅ generate JWT token
+        token = create_access_token({"sub": user.email})
+
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user_type": user.user_type
+        }
+
+    except Exception as e:
+        print("LOGIN ERROR:", e)
+        raise e
+
+    finally:
         db.close()
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    # ❌ wrong password
-    if not verify_password(data.password, user.password):
-        db.close()
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    # ✅ generate JWT token
-    token = create_access_token({"sub": user.email})
-
-    db.close()
-
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user_type": user.user_type
-    }
