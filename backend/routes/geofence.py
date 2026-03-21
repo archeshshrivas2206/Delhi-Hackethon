@@ -51,7 +51,10 @@ def check_location(data: LocationRequest):
 ):
             results.append({
                 "name": project["name"],
-                "description": project["description"]
+                "description": project["description"],
+                "lat": project["lat"],
+                "lon": project["lon"],
+                "radius": project["radius"]
             })
 
     return {

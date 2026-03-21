@@ -104,9 +104,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setUserType("citizen")}
-              className={`p-3 border rounded ${
-                userType === "citizen" ? "border-green-500" : ""
-              }`}
+              className={`p-3 border rounded ${userType === "citizen" ? "border-green-500" : ""
+                }`}
             >
               <User className="mx-auto mb-1" />
               Citizen
@@ -115,9 +114,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setUserType("politician")}
-              className={`p-3 border rounded ${
-                userType === "politician" ? "border-blue-500" : ""
-              }`}
+              className={`p-3 border rounded ${userType === "politician" ? "border-blue-500" : ""
+                }`}
             >
               <Building2 className="mx-auto mb-1" />
               Authority
