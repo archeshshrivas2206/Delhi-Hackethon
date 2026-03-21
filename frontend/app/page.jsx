@@ -92,6 +92,13 @@ export default function LandingPage() {
             </span>
           </button>
 
+          <button
+            onClick={() => router.push("/register")}
+            className="px-8 py-4 border border-border rounded-xl font-semibold hover:bg-muted transition"
+          >
+            Register
+          </button>
+
         </div>
 
         {/* Features */}
