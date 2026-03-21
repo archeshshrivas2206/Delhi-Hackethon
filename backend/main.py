@@ -4,6 +4,8 @@ from models.project import Project
 from routes import project
 from routes import geofence
 from fastapi.middleware.cors import CORSMiddleware
+from routes import auth
+from models.login_log import LoginLog
 
 
 
@@ -24,3 +26,4 @@ def home():
 
 app.include_router(project.router, prefix="/api")
 app.include_router(geofence.router, prefix="/api")
+app.include_router(auth.router)

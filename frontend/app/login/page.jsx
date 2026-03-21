@@ -21,7 +21,6 @@ export default function LoginPage() {
 
   const [error, setError] = useState("")
 
-  // ✅ Sync userType with URL
   useEffect(() => {
     if (typeFromUrl) {
       setUserType(typeFromUrl)
@@ -33,16 +32,44 @@ export default function LoginPage() {
     setError("")
     setIsLoading(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // ✅ validation first
+    if (!formData.email || !formData.password) {
+      setError("Please enter both email and password")
+      setIsLoading(false)
+      return
+    }
 
-    if (formData.email && formData.password) {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      })
+
+      const data = await res.json()
+
+      console.log("API RESPONSE:", data)
+
+      if (!res.ok) throw new Error(data.detail)
+
+      // ✅ save token
+      localStorage.setItem("token", data.access_token)
+
+      // ✅ redirect AFTER success only
       router.push(
         userType === "citizen"
           ? "/dashboard/citizen"
           : "/dashboard/politician"
       )
-    } else {
-      setError("Please enter both email and password")
+
+    } catch (err) {
+      console.log("ERROR:", err)
+      setError("Invalid credentials")
       setIsLoading(false)
     }
   }
@@ -58,7 +85,6 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-md bg-card border border-border rounded-xl p-6">
 
-        {/* Header */}
         <div className="text-center mb-6">
           <MapPin className="mx-auto mb-2" />
           <h1 className="text-xl font-bold">
@@ -66,7 +92,6 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        {/* ✅ Show selection only if no type in URL */}
         {!typeFromUrl && (
           <div className="grid grid-cols-2 gap-3 mb-4">
             <button
@@ -93,7 +118,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <input
