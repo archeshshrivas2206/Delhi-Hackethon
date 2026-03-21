@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import ReportIssueForm from "@/components/ReportIssueForm"
 import toast from "react-hot-toast"
+import MapView from "@/components/MapView"
 /* -------------------- DATA -------------------- */
 
 const categories = [
@@ -426,10 +427,12 @@ export default function CitizenDashboard() {
           {/* ================= MAP ================= */}
           {activeView === "map" && (
             <div className="h-[500px] rounded-xl overflow-hidden border">
-              <CitizenMapView userLocation={userLocation} />
+              <MapView
+                userLocation={userLocation}
+                projects={geoResult?.projects}
+              />
             </div>
           )}
-
           {/* ================= COMPLAINT ================= */}
           {activeView === "complaint" && (
             <ReportIssueForm userLocation={userLocation} />
@@ -511,31 +514,5 @@ export default function CitizenDashboard() {
         </main>
       </div>
     </div>
-  )
-}
-function CitizenMapView({ selectedCategory, userLocation }) {
-  const queries = {
-    hospitals: "hospitals",
-    education: "schools",
-    toilets: "public toilets",
-    transport: "bus station metro",
-    parks: "parks",
-    markets: "markets",
-  }
-
-  const query = queries[selectedCategory] || "hospitals"
-
-  const location = userLocation
-    ? `${userLocation.lat},${userLocation.lng}`
-    : "28.6139,77.2090"
-
-  return (
-    <iframe
-      width="100%"
-      height="100%"
-      style={{ border: 0 }}
-      loading="lazy"
-      src={`https://www.google.com/maps?q=${query}&center=${location}&z=14&output=embed`}
-    />
   )
 }
