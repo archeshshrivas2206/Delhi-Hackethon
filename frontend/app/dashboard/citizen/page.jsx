@@ -51,6 +51,7 @@ export default function CitizenDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [userLocation, setUserLocation] = useState(null)
   const [geoResult, setGeoResult] = useState(null)
+  const [user, setUser] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([
@@ -112,6 +113,13 @@ export default function CitizenDashboard() {
   const CategoryIcon =
     categories.find(c => c.id === selectedCategory)?.icon || Hospital
 
+    useEffect(() => {
+  const storedUser = localStorage.getItem("user")
+  if (storedUser) {
+    setUser(JSON.parse(storedUser))
+  }
+}, [])
+
   return (
     <div className="h-screen flex flex-col">
 
@@ -167,9 +175,11 @@ export default function CitizenDashboard() {
           {showProfileMenu && (
             <div className="absolute right-0 top-10 w-56 bg-card border rounded-xl shadow-lg p-3 z-50">
 
-              <p className="font-semibold">Abhinav</p>
+              <p className="font-semibold">
+                {user?.name || "Guest"}
+              </p>
               <p className="text-xs text-muted-foreground mb-3">
-                abhinav@email.com
+                {user?.email || "No email"}
               </p>
 
               <div className="space-y-2">
@@ -280,8 +290,8 @@ export default function CitizenDashboard() {
               <h2 className="text-xl font-bold mb-4">My Profile</h2>
 
               <div className="space-y-3">
-                <p><b>Name:</b> Abhinav</p>
-                <p><b>Email:</b> abhinav@email.com</p>
+                <p><b>Name:</b> {user?.name || "Guest"}</p>
+                <p><b>Email:</b> {user?.email || "No email"}</p>
                 <p><b>Location:</b> {userLocation?.lat}, {userLocation?.lng}</p>
               </div>
             </div>

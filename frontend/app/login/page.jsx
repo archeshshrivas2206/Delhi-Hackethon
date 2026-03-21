@@ -57,16 +57,23 @@ export default function LoginPage() {
 
       if (!res.ok) throw new Error(data.detail)
 
-      // ✅ save token
+      
+     // ✅ save token
       localStorage.setItem("token", data.access_token)
 
-      // ✅ redirect AFTER success only
-      router.push(
-        userType === "citizen"
-          ? "/dashboard/citizen"
-          : "/dashboard/politician"
-      )
+      // ✅ save user
+      localStorage.setItem("user", JSON.stringify({
+        email: formData.email,
+        name: formData.email.split("@")[0]
+      }))
 
+
+      // ✅ redirect AFTER success only
+     router.push(
+  userType === "citizen"
+    ? "/dashboard/citizen"
+    : "/dashboard/politician"
+)
     } catch (err) {
       console.log("ERROR:", err)
       setError("Invalid credentials")
