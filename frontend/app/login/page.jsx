@@ -57,8 +57,8 @@ export default function LoginPage() {
 
       if (!res.ok) throw new Error(data.detail)
 
-      
-     // ✅ save token
+
+      // ✅ save token
       localStorage.setItem("token", data.access_token)
 
       // ✅ save user
@@ -69,11 +69,11 @@ export default function LoginPage() {
 
 
       // ✅ redirect AFTER success only
-     router.push(
-  userType === "citizen"
-    ? "/dashboard/citizen"
-    : "/dashboard/politician"
-)
+      router.push(
+        userType === "citizen"
+          ? "/dashboard/citizen"
+          : "/dashboard/politician"
+      )
     } catch (err) {
       console.log("ERROR:", err)
       setError("Invalid credentials")
@@ -163,6 +163,25 @@ export default function LoginPage() {
             className="w-full py-3 bg-blue-500 text-white rounded"
           >
             {isLoading ? "Loading..." : `Login as ${userType}`}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem("token", "dev-token")
+              localStorage.setItem("user", JSON.stringify({
+                name: "Dev User",
+                email: "dev@test.com"
+              }))
+
+              router.push(
+                userType === "citizen"
+                  ? "/dashboard/citizen"
+                  : "/dashboard/politician"
+              )
+            }}
+            className="w-full py-3 bg-gray-700 text-white rounded"
+          >
+            Continue in Dev Mode
           </button>
 
         </form>
