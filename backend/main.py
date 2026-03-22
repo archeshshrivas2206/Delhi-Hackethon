@@ -9,7 +9,7 @@ from models.login_log import LoginLog
 
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.add_middleware(
