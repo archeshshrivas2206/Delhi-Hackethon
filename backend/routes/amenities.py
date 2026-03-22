@@ -120,3 +120,157 @@ def get_amenities_by_category(category: str):
     """Get amenities by category"""
     filtered = [a for a in amenities if a.get("category") == category]
     return {"amenities": filtered}
+
+amenities.extend([
+    # Indore Amenities
+    {
+        "id": 7,
+        "name": "Indore Railway Station",
+        "type": "transport",
+        "category": "transport",
+        "lat": 22.7100,
+        "lng": 75.8600,
+        "address": "Indore Railway Station",
+        "description": "Major railway junction"
+    },
+    {
+        "id": 8,
+        "name": "Devi Ahilyabai Holkar Airport",
+        "type": "airport",
+        "category": "transport",
+        "lat": 22.7200,
+        "lng": 75.8000,
+        "address": "Airport Road",
+        "description": "Indore International Airport"
+    },
+    {
+        "id": 9,
+        "name": "Rajwada Palace",
+        "type": "monument",
+        "category": "recreation",
+        "lat": 22.7180,
+        "lng": 75.8550,
+        "address": "Rajwada, Indore",
+        "description": "Historical palace",
+        "rating": 4.7
+    },
+    {
+        "id": 10,
+        "name": "Lal Bagh Palace",
+        "type": "palace",
+        "category": "recreation",
+        "lat": 22.7050,
+        "lng": 75.8700,
+        "address": "Lal Bagh",
+        "description": "Royal palace museum"
+    },
+    
+    # Delhi Amenities
+    {
+        "id": 11,
+        "name": "India Gate",
+        "type": "monument",
+        "category": "recreation",
+        "lat": 28.6129,
+        "lng": 77.2295,
+        "address": "Rajpath, New Delhi",
+        "description": "War memorial",
+        "rating": 4.8
+    },
+    {
+        "id": 12,
+        "name": "Red Fort",
+        "type": "monument",
+        "category": "recreation",
+        "lat": 28.6562,
+        "lng": 77.2410,
+        "address": "Netaji Subhash Marg",
+        "description": "Historical fort",
+        "rating": 4.7
+    },
+    {
+        "id": 13,
+        "name": "Qutub Minar",
+        "type": "monument",
+        "category": "recreation",
+        "lat": 28.5245,
+        "lng": 77.1855,
+        "address": "Mehrauli",
+        "description": "World Heritage Site",
+        "rating": 4.8
+    },
+    {
+        "id": 14,
+        "name": "Lotus Temple",
+        "type": "temple",
+        "category": "recreation",
+        "lat": 28.5535,
+        "lng": 77.2588,
+        "address": "Kalkaji",
+        "description": "Bahá'í House of Worship",
+        "rating": 4.7
+    },
+    {
+        "id": 15,
+        "name": "AIIMS Delhi",
+        "type": "hospital",
+        "category": "healthcare",
+        "lat": 28.5675,
+        "lng": 77.2100,
+        "address": "Ansari Nagar",
+        "description": "All India Institute of Medical Sciences",
+        "rating": 4.6,
+        "timings": "24/7"
+    },
+    {
+        "id": 16,
+        "name": "Delhi University",
+        "type": "university",
+        "category": "education",
+        "lat": 28.6900,
+        "lng": 77.2100,
+        "address": "North Campus",
+        "description": "Central University"
+    },
+    {
+        "id": 17,
+        "name": "Connaught Place",
+        "type": "market",
+        "category": "shopping",
+        "lat": 28.6300,
+        "lng": 77.2200,
+        "address": "New Delhi",
+        "description": "Commercial hub"
+    },
+    {
+        "id": 18,
+        "name": "Hauz Khas Village",
+        "type": "market",
+        "category": "shopping",
+        "lat": 28.5530,
+        "lng": 77.1950,
+        "address": "Hauz Khas",
+        "description": "Boutique shops and cafes"
+    },
+    {
+        "id": 19,
+        "name": "Nehru Park",
+        "type": "park",
+        "category": "recreation",
+        "lat": 28.5900,
+        "lng": 77.1900,
+        "address": "Chanakyapuri",
+        "description": "Large urban park",
+        "timings": "5 AM - 9 PM"
+    },
+    {
+        "id": 20,
+        "name": "Delhi Metro - Rajiv Chowk",
+        "type": "metro",
+        "category": "transport",
+        "lat": 28.6320,
+        "lng": 77.2200,
+        "address": "Connaught Place",
+        "description": "Major metro station"
+    }
+])
