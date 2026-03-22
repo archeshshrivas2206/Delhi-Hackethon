@@ -4,7 +4,6 @@
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import "leaflet/dist/leaflet.css"
-import { zones } from "@/lib/zones"
 
 // Dynamically import all Leaflet components to avoid SSR issues
 const MapContainer = dynamic(
@@ -27,15 +26,14 @@ const Popup = dynamic(
   { ssr: false }
 )
 
-// IMPORTANT: Polygon must be dynamically imported too
 const Polygon = dynamic(
   () => import("react-leaflet").then((m) => m.Polygon),
   { ssr: false }
 )
 
-export default function MapView({ userLocation }) {
+export default function MapView({ userLocation, zones = [] }) {  // ← Added zones as prop with default empty array
   const [leaflet, setLeaflet] = useState(null)
-  const [activeZone, setActiveZone] = useState(null) // Track which zone user is in
+  const [activeZone, setActiveZone] = useState(null)
 
   // Fix Leaflet default marker icons
   useEffect(() => {
@@ -55,23 +53,22 @@ export default function MapView({ userLocation }) {
     })
   }, [])
 
-  // Debug: Log zones to console
+  // Debug: Log zones received from prop
   useEffect(() => {
-    console.log("📦 Zones loaded in MapView:", zones)
+    console.log("📦 Zones received in MapView from props:", zones)
     console.log("Number of zones:", zones.length)
-    zones.forEach((zone, index) => {
-      console.log(`Zone ${index + 1} (${zone.name}):`, zone.coordinates)
-      const firstPoint = zone.coordinates[0]
-      const lastPoint = zone.coordinates[zone.coordinates.length - 1]
-      console.log(`  Is polygon closed?`,
-        firstPoint[0] === lastPoint[0] && firstPoint[1] === lastPoint[1]
-      )
-    })
-  }, [])
+    if (zones.length > 0) {
+      zones.forEach((zone, index) => {
+        console.log(`Zone ${index + 1} (${zone.name}):`, zone.coordinates)
+      })
+    } else {
+      console.log("⚠️ No zones passed to MapView")
+    }
+  }, [zones])
 
   // Detect which zone the user is in and set active zone
   useEffect(() => {
-    if (!userLocation || !leaflet) return
+    if (!userLocation || !leaflet || zones.length === 0) return
 
     // Point-in-polygon detection function
     const isPointInPolygon = (point, polygon) => {
@@ -115,23 +112,23 @@ export default function MapView({ userLocation }) {
     }
 
     setActiveZone(foundZone)
-  }, [userLocation, leaflet])
+  }, [userLocation, zones, leaflet])
 
   if (!leaflet) {
     return <p className="text-center py-10">Loading map...</p>
   }
 
-  // Default center (Delhi) if no user location
+  // Default center (Indore) if no user location
   const center = userLocation
     ? [userLocation.lat, userLocation.lng]
-    : [28.6139, 77.2090]
+    : [22.6954, 75.8346]  // ← Changed to Indore coordinates
 
   console.log("🎯 Map center:", center)
 
   return (
     <MapContainer
       center={center}
-      zoom={14} // Zoom level to see zones clearly
+      zoom={14}
       style={{ height: "500px", width: "100%" }}
       scrollWheelZoom={true}
     >
@@ -175,8 +172,6 @@ export default function MapView({ userLocation }) {
         >
           <Popup>
             <b>{zone.name}</b>
-            <br />
-            ID: {zone.id}
             {zone.description && (
               <>
                 <br />
