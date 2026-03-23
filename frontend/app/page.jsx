@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { MapPin, Building2, Users, ChevronRight, Globe2, Shield, Activity } from "lucide-react"
 
 export default function LandingPage() {
@@ -9,18 +10,18 @@ export default function LandingPage() {
   const features = [
     {
       icon: MapPin,
-      title: "Geo-Fenced Zones",
-      description: "Track civic zones with precise geographic boundaries"
+      title: "Select Your Area",
+      description: "Choose your location to explore near by civic"
     },
     {
       icon: Building2,
-      title: "Project Monitoring",
-      description: "Monitor development projects in real-time"
+      title: "View Issue & Projects",
+      description: "Track problems and projects in your area"
     },
     {
       icon: Users,
-      title: "Citizen Engagement",
-      description: "Connect citizens with authorities seamlessly"
+      title: "Connect With Authorities",
+      description: "Engage directly with authorities to voice your concerns and suggestions"
     }
   ]
 
@@ -34,103 +35,98 @@ export default function LandingPage() {
       </div>
 
       {/* Grid Overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
           backgroundSize: "50px 50px"
         }}
       />
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-4 pb-20">
 
-        {/* Badge */}
-        <div className="flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-secondary/50 border border-border">
-          <Globe2 className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm text-muted-foreground">
-            Civic Governance Platform
-          </span>
-        </div>
+        {/* Hero Section */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-        {/* Heading */}
-        <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
-          Geo-Spatial <br />
-          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            Civic Governance
-          </span>
-        </h1>
+          {/* Left Column - Content */}
+          <div className="flex flex-col items-start text-left pt-6">
+            <h2 className="text-[2.5rem] md:text-6xl font-bold text-blue-400 mb-8 tracking-wide">Geo Civic</h2>
+            <h1 className="text-[3.5rem] md:text-4xl font-extrabold text-black dark:text-white leading-[1.1] mb-2 tracking-tight">
+              Explore Your City
+            </h1>
+            <h1 className="text-[3.5rem] md:text-[5rem] font-extrabold text-[#0acc8b] leading-[1.1] mb-8 tracking-tight">
+              With Smart Governance
+            </h1>
 
-        {/* Subtitle */}
-        <p className="text-lg text-muted-foreground text-center max-w-xl mb-12">
-          Explore your area, track civic projects, and know exactly 
-          which authority is responsible — all on an interactive map.
-        </p>
+            <p className="text-xl text-muted-foreground mb-10 max-w-xl">
+              Discover civic projects, report issues, and connect directly with authorities in your area — all in one place.
+            </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4">
+            {/* CTA Buttons Container */}
+            <div className="flex flex-col w-full sm:w-auto self-start gap-4">
+              <div className="flex flex-col sm:flex-row w-full gap-4">
+                <button
+                  onClick={() => router.push("/login?type=citizen")}
+                  className="px-6 py-2 bg-[#0acc8b] text-white rounded-xl font-semibold hover:bg-emerald-600 transition shadow-md flex items-center justify-center gap-2 flex-1 text-lg"
+                >
+                  <Users className="w-5 h-5" />
+                  Explore as Citizen
+                </button>
 
-          <button
-            onClick={() => router.push("/login?type=citizen")}
-            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl font-semibold text-background hover:scale-105 transition"
-          >
-            <span className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Continue as Citizen
-              <ChevronRight className="w-5 h-5" />
-            </span>
-          </button>
-
-          <button
-            onClick={() => router.push("/login?type=politician")}
-            className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl font-semibold text-background hover:scale-105 transition"
-          >
-            <span className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Continue as Authority
-              <ChevronRight className="w-5 h-5" />
-            </span>
-          </button>
-
-          <button
-            onClick={() => router.push("/register")}
-            className="px-8 py-4 border border-border rounded-xl font-semibold hover:bg-muted transition"
-          >
-            Register
-          </button>
-
-        </div>
-
-        {/* Features */}
-        <div className="grid md:grid-cols-3 gap-6 mt-20 max-w-5xl w-full">
-          {features.map((feature, i) => {
-            const Icon = feature.icon
-            return (
-              <div key={i} className="p-6 rounded-xl bg-card border border-border hover:border-emerald-500/30 transition">
-                <Icon className="w-8 h-8 text-emerald-400 mb-4" />
-                <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <button
+                  onClick={() => router.push("/login?type=politician")}
+                  className="px-6 py-2 bg-white text-gray-800 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2 flex-1 text-lg"
+                >
+                  <Building2 className="w-5 h-5 text-gray-600" />
+                  Authority Panel
+                </button>
               </div>
-            )
-          })}
-        </div>
 
-        {/* Stats */}
-        <div className="flex gap-10 mt-16 flex-wrap justify-center">
-          <div className="text-center">
-            <p className="text-2xl font-bold">150+</p>
-            <p className="text-sm text-muted-foreground">Projects</p>
+              <div className="flex w-full justify-center">
+                <button
+                  onClick={() => router.push("/register")}
+                  className="px-8 py-3 bg-white text-gray-800 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2 min-w-[200px]"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                  Register
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">45</p>
-            <p className="text-sm text-muted-foreground">Organizations</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">2.5M</p>
-            <p className="text-sm text-muted-foreground">Citizens</p>
+
+          {/* Right Column - Image Card & Features */}
+          <div className="flex flex-col w-full gap-8 z-20">
+            <div className="relative w-full aspect-[5/3] -mt-2 rounded-3xl overflow-hidden shadow-2xl group">
+              <Image
+                src="/indiaflag.png"
+                alt="India Flag"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                priority
+              />
+
+              {/* Floating Stats Card */}
+              <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100 z-20">
+                <p className="text-sm font-medium text-gray-500 mb-1">Active Projects</p>
+                <p className="text-2xl font-extrabold text-gray-900">150+ Running</p>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+              {features.map((feature, i) => {
+                const Icon = feature.icon
+                return (
+                  <div key={i} className="p-5 rounded-xl bg-white/60 backdrop-blur-sm border border-border hover:border-emerald-500/30 hover:shadow-md transition">
+                    <Icon className="w-6 h-6 text-emerald-500 mb-3" />
+                    <h3 className="font-semibold text-base mb-1">{feature.title}</h3>
+                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
-
       </div>
     </main>
   )

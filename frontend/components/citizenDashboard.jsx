@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import {
   MapPin, Search, Bell, User, LogOut, Menu, X,
@@ -57,6 +57,19 @@ export default function CitizenDashboard() {
   const [user, setUser] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  const navRef = useRef(null)
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setShowNotifications(false)
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
   const [notifications, setNotifications] = useState([
     { id: 1, text: "Complaint resolved", read: false },
     { id: 2, text: "New project near you", read: false }
@@ -194,63 +207,106 @@ export default function CitizenDashboard() {
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X /> : <Menu />}
           </button>
-          <span className="font-bold">CivicGov</span>
+          <span className="font-bold text-4xl">Civic Gov</span>
         </div>
 
-        <div className="flex gap-3 relative">
-          <button onClick={() => {
-            setShowNotifications(!showNotifications)
-            setShowProfileMenu(false)
-          }}>
-            <Bell />
+        <div ref={navRef} className="flex gap-3 relative items-center">
+
+          <button 
+            className="p-2 hover:bg-muted rounded-full transition-colors relative"
+            onClick={() => {
+              setShowNotifications(!showNotifications)
+              setShowProfileMenu(false)
+            }}
+          >
+            <Bell size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
           </button>
 
-          <button onClick={() => {
-            setShowProfileMenu(!showProfileMenu)
-            setShowNotifications(false)
-          }}>
-            <User />
+          <button 
+            className="p-2 hover:bg-muted rounded-full transition-colors"
+            onClick={() => {
+              setShowProfileMenu(!showProfileMenu)
+              setShowNotifications(false)
+            }}
+          >
+            <User size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
           </button>
-          <button onClick={() => router.push("/login")}>
-            <LogOut />
-          </button>
-          
+
+
           {showNotifications && (
-            <div className="absolute right-12 top-10 w-72 bg-card border rounded-xl shadow-lg p-4 z-50">
-              <h4 className="font-semibold mb-2">Notifications</h4>
-              <div className="space-y-2 text-sm">
-                {notifications.length === 0 ? (
-                  <p className="text-muted-foreground">No notifications</p>
-                ) : (
-                  notifications.map((n) => (
-                    <div key={n.id} className="p-2 rounded hover:bg-muted transition">
-                      {n.text}
-                    </div>
-                  ))
-                )}
+            <div className="absolute right-12 top-10 w-80 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
+              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+                <h3 className="font-semibold text-foreground">Notifications</h3>
+                <span className="text-xs text-cyan-500 font-medium cursor-pointer">Mark all as read</span>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                <div className="space-y-1 p-2">
+                  {notifications.length === 0 ? (
+                    <p className="text-muted-foreground text-sm p-2 text-center">No notifications</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div key={n.id} className="p-3 rounded-lg hover:bg-muted/50 transition cursor-pointer text-sm">
+                        {n.text}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div
+                  onClick={() => { setActiveView("notifications"); setShowNotifications(false) }}
+                  className="p-4 border-t border-border hover:bg-muted/50 transition cursor-pointer text-center"
+                >
+                  <span className="text-sm text-cyan-500 font-medium">View all notifications</span>
+                </div>
               </div>
             </div>
           )}
-          
+
           {showProfileMenu && (
             <div className="absolute right-0 top-10 w-56 bg-card border rounded-xl shadow-lg p-3 z-50">
               <p className="font-semibold">{user?.name || "Guest"}</p>
               <p className="text-xs text-muted-foreground mb-3">{user?.email || "No email"}</p>
               <div className="space-y-2">
-                <button onClick={() => setActiveView("profile")} className="w-full text-left text-sm hover:bg-muted p-2 rounded">
-                  View Profile
+                <button onClick={() => { setActiveView("profile"); setShowProfileMenu(false) }} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
+                  <User size={16} /> My Profile
                 </button>
-                <button onClick={() => setActiveView("setting")} className="w-full text-left text-sm hover:bg-muted p-2 rounded">
-                  Settings
+                <button onClick={() => { setActiveView("setting"); setShowProfileMenu(false) }} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
+                  <Settings size={16} /> Account Settings
                 </button>
-                <button onClick={() => router.push("/login")} className="w-full text-left text-sm text-red-400 hover:bg-muted p-2 rounded">
-                  Logout
-                </button>
+                <div className="border-t border-border pt-2 mt-2">
+                  <button onClick={() => { setShowProfileMenu(false); setShowLogoutConfirm(true); }} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </nav>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-sm rounded-2xl p-6 shadow-xl border border-border m-4">
+            <h2 className="text-xl font-bold text-foreground mb-2">Confirm Logout</h2>
+            <p className="text-muted-foreground mb-6">Are you sure you want to sign out of your account?</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-4 py-2 rounded-xl text-foreground bg-muted hover:bg-muted/80 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => router.push("/login")}
+                className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1">
 
@@ -261,39 +317,39 @@ export default function CitizenDashboard() {
               <button onClick={() => setActiveView("dashboard")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "dashboard"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
-              }`}>
+                }`}>
                 <Home /> Dashboard
               </button>
 
               <button onClick={() => setActiveView("complaint")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "complaint"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
-              }`}>
+                }`}>
                 <FileText /> Complaints
               </button>
-              
+
               <button onClick={() => setActiveView("map")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "map"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
-              }`}>
+                }`}>
                 <MapIcon /> Map
               </button>
 
               <button onClick={() => setActiveView("zones")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "zones"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
-              }`}>
+                }`}>
                 <MapIcon /> Development Zones
               </button>
 
-              <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "setting"
+              <button onClick={() => setActiveView("setting")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "setting"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
-              }`}>
+                }`}>
                 <Settings /> Settings
               </button>
             </nav>
-            
+
             {/* Categories with counts */}
             <div className="mt-6">
               <p className="text-sm mb-2 text-muted-foreground">Nearby</p>
@@ -306,10 +362,10 @@ export default function CitizenDashboard() {
                 { id: "shopping", name: "Markets", icon: ShoppingBag, category: "shopping" }
               ].map((cat) => {
                 const Icon = cat.icon
-                const count = cat.id === "all" 
-                  ? nearbyAmenities.length 
+                const count = cat.id === "all"
+                  ? nearbyAmenities.length
                   : nearbyAmenities.filter(a => a.category === cat.category).length
-                
+
                 return (
                   <button
                     key={cat.id}
@@ -321,11 +377,10 @@ export default function CitizenDashboard() {
                       }
                       setActiveView("places")
                     }}
-                    className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                      activeView === cat.id
-                        ? "bg-cyan-500/10 text-cyan-400"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
+                    className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === cat.id
+                      ? "bg-cyan-500/10 text-cyan-400"
+                      : "text-muted-foreground hover:bg-muted"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="w-4 h-4" />
@@ -343,15 +398,95 @@ export default function CitizenDashboard() {
           </aside>
         )}
 
-        {/* ---------------- MAIN ---------------- */}
         <main className="flex-1 p-6 overflow-auto">
           {activeView === "profile" && (
-            <div className="max-w-xl mx-auto bg-card border rounded-xl p-6">
-              <h2 className="text-xl font-bold mb-4">My Profile</h2>
-              <div className="space-y-3">
-                <p><b>Name:</b> {user?.name || "Guest"}</p>
-                <p><b>Email:</b> {user?.email || "No email"}</p>
-                <p><b>Location:</b> {userLocation?.lat}, {userLocation?.lng}</p>
+            <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-8 mt-4">
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shrink-0 text-3xl font-bold shadow-lg">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "G"}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">{user?.name || "Guest Citizen"}</h2>
+                  <p className="text-muted-foreground">{user?.email || "citizen@example.com"}</p>
+                  <span className="inline-block mt-2 px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm font-semibold">Verified Resident</span>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-sm font-semibold text-muted-foreground block mb-2">Full Name</label>
+                  <input type="text" disabled value={user?.name || "Guest Citizen"} className="w-full p-3 rounded-lg bg-muted border border-border text-foreground" />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-muted-foreground block mb-2">Email Address</label>
+                  <input type="text" disabled value={user?.email || "citizen@example.com"} className="w-full p-3 rounded-lg bg-muted border border-border text-foreground" />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-muted-foreground block mb-2">Saved Location</label>
+                  <input type="text" disabled value={userLocation ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : "Location not available"} className="w-full p-3 rounded-lg bg-muted border border-border text-foreground" />
+                </div>
+                <button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors">
+                  Request Profile Update
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeView === "notifications" && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">All Notifications</h3>
+              <div className="space-y-4">
+                {notifications.length === 0 ? (
+                  <p className="text-muted-foreground">You have no new notifications.</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className="flex items-start gap-4 p-4 border border-border rounded-xl bg-muted/30">
+                      <div className="p-2 bg-cyan-500/10 text-cyan-500 rounded-lg shrink-0">
+                        <Bell className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{n.text}</p>
+                        <p className="text-xs text-muted-foreground mt-2">Just now</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeView === "setting" && (
+            <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-8 mt-4">
+              <h3 className="text-xl font-bold text-foreground mb-6">Account Settings</h3>
+
+              <div className="space-y-6 border-b border-border pb-6 mb-6">
+                <h4 className="font-semibold text-foreground mb-4">Notifications</h4>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Email Notifications</p>
+                    <p className="text-sm text-muted-foreground">Receive civic updates</p>
+                  </div>
+                  <div className="w-12 h-6 bg-cyan-500 rounded-full relative cursor-pointer">
+                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">SMS Alerts</p>
+                    <p className="text-sm text-muted-foreground">Complaint status changes</p>
+                  </div>
+                  <div className="w-12 h-6 bg-cyan-500 rounded-full relative cursor-pointer">
+                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="font-semibold text-foreground mb-4">Security</h4>
+                <button className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted transition-colors flex justify-between items-center">
+                  <span className="font-medium text-foreground">Change Password</span>
+                  <Settings className="w-4 h-4 text-muted-foreground" />
+                </button>
               </div>
             </div>
           )}
@@ -446,7 +581,7 @@ export default function CitizenDashboard() {
                 <div className="bg-card border rounded-xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">📍 Nearby Amenities</h3>
-                    <button 
+                    <button
                       onClick={() => setActiveView("places")}
                       className="text-xs text-cyan-400 hover:text-cyan-300"
                     >
@@ -494,7 +629,7 @@ export default function CitizenDashboard() {
                 <div className="bg-card border rounded-xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Your Complaints</h3>
-                    <button 
+                    <button
                       onClick={() => setActiveView("complaint")}
                       className="text-xs text-cyan-400 hover:text-cyan-300"
                     >
@@ -522,14 +657,14 @@ export default function CitizenDashboard() {
               </div>
             </>
           )}
-          
+
           {/* ================= MAP ================= */}
           {activeView === "map" && (
             <div className="h-[500px] rounded-xl overflow-hidden border">
               <MapView userLocation={userLocation} zones={zonesList} />
             </div>
           )}
-          
+
           {/* ================= COMPLAINT ================= */}
           {activeView === "complaint" && (
             <ReportIssueForm userLocation={userLocation} />
@@ -637,7 +772,7 @@ export default function CitizenDashboard() {
                     </div>
                   ))}
               </div>
-              
+
               {filteredAmenities.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No amenities found</p>

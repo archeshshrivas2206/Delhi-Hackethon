@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { 
   MapPin, Bell, User, LogOut, Menu, X,
@@ -82,6 +82,21 @@ export default function PoliticianDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const [userLocation, setUserLocation] = useState(null)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  const navRef = useRef(null)
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setShowNotifications(false)
+        setShowProfile(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   // Get user's current location on mount
   useEffect(() => {
@@ -125,23 +140,137 @@ export default function PoliticianDashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-lg hover:bg-muted transition-colors relative">
-            <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-500 rounded-full" />
-          </button>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
-            <User className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-foreground">MLA - Constituency 14</span>
+        <div ref={navRef} className="flex items-center gap-4 relative">
+
+          {/* Notifications */}
+          <div className="relative">
+            <button 
+              onClick={() => {
+                setShowNotifications(!showNotifications)
+                setShowProfile(false)
+              }}
+              className={`p-2 rounded-lg transition-colors relative ${showNotifications ? 'bg-muted' : 'hover:bg-muted'}`}
+            >
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-500 rounded-full" />
+            </button>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
+                <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+                  <h3 className="font-semibold text-foreground">Notifications</h3>
+                  <span className="text-xs text-cyan-500 font-medium cursor-pointer">Mark all as read</span>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  <div className="p-4 border-b border-border hover:bg-muted/50 transition cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-red-500/10 text-red-500 rounded-lg shrink-0">
+                        <AlertCircle className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">High Priority Complaint</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Water logging in Sector 9 needs immediate attention.</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">10 mins ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 border-b border-border hover:bg-muted/50 transition cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shrink-0">
+                        <Building2 className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Project Update</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Sector 15 Community Hall construction reached 80%.</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">2 hours ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div 
+                    onClick={() => { setActiveTab("notifications"); setShowNotifications(false); setShowMap(false) }}
+                    className="p-4 hover:bg-muted/50 transition cursor-pointer text-center"
+                  >
+                    <span className="text-sm text-cyan-500 font-medium">View all notifications</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <button 
-            onClick={() => router.push("/login")}
-            className="p-2 rounded-lg hover:bg-muted transition-colors text-red-400"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+
+          {/* Profile */}
+          <div className="relative">
+            <button 
+              onClick={() => {
+                setShowProfile(!showProfile)
+                setShowNotifications(false)
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors border ${showProfile ? 'bg-muted border-border' : 'bg-transparent border-transparent hover:bg-muted'}`}
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shrink-0">
+                <span className="text-xs font-bold">M</span>
+              </div>
+              <span className="text-sm font-medium text-foreground hidden sm:block">MLA - Const. 14</span>
+            </button>
+
+            {/* Profile Dropdown */}
+            {showProfile && (
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
+                <div className="p-4 border-b border-border bg-muted/30">
+                  <p className="font-semibold text-foreground">Authority Panel</p>
+                  <p className="text-xs text-muted-foreground truncate">mla-const14@gov.in</p>
+                </div>
+                <div className="p-2">
+                  <button 
+                    onClick={() => { setActiveTab("profile"); setShowProfile(false); setShowMap(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                  >
+                    <User className="w-4 h-4" /> My Profile
+                  </button>
+                  <button 
+                    onClick={() => { setActiveTab("settings"); setShowProfile(false); setShowMap(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                  >
+                    <Settings className="w-4 h-4" /> Account Settings
+                  </button>
+                </div>
+                <div className="p-2 border-t border-border">
+                  <button 
+                    onClick={() => { setShowProfile(false); setShowLogoutConfirm(true); }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-sm rounded-2xl p-6 shadow-xl border border-border m-4">
+            <h2 className="text-xl font-bold text-foreground mb-2">Confirm Logout</h2>
+            <p className="text-muted-foreground mb-6">Are you sure you want to sign out of your account?</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-4 py-2 rounded-xl text-foreground bg-muted hover:bg-muted/80 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => router.push("/login")}
+                className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
@@ -192,7 +321,14 @@ export default function PoliticianDashboard() {
                 <BarChart3 className="w-5 h-5" />
                 <span>Analytics</span>
               </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+              <button 
+                onClick={() => { setActiveTab("settings"); setShowMap(false) }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  activeTab === "settings" && !showMap
+                    ? "bg-cyan-500/10 text-cyan-400"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
                 <Settings className="w-5 h-5" />
                 <span>Settings</span>
               </button>
@@ -223,12 +359,18 @@ export default function PoliticianDashboard() {
                     {activeTab === "projects" && "Development Zones"}
                     {activeTab === "complaints" && "Citizen Complaints"}
                     {activeTab === "analytics" && "Analytics"}
+                    {activeTab === "notifications" && "All Notifications"}
+                    {activeTab === "profile" && "My Profile"}
+                    {activeTab === "settings" && "Account Settings"}
                   </h1>
                   <p className="text-muted-foreground mt-1">
                     {activeTab === "overview" && "Monitor your constituency development"}
                     {activeTab === "projects" && "Track all development projects in your area"}
                     {activeTab === "complaints" && "Manage and resolve citizen complaints"}
                     {activeTab === "analytics" && "View detailed analytics and reports"}
+                    {activeTab === "notifications" && "Review all your updates and alerts"}
+                    {activeTab === "profile" && "Manage your professional authority profile"}
+                    {activeTab === "settings" && "Configure dashboard and system preferences"}
                   </p>
                 </div>
                 <button
@@ -419,6 +561,109 @@ export default function PoliticianDashboard() {
                   <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">Analytics Coming Soon</h3>
                   <p className="text-muted-foreground">Detailed analytics and reports will be available here.</p>
+                </div>
+              )}
+              {/* Notifications Tab */}
+              {activeTab === "notifications" && (
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">All Notifications</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4 p-4 border border-border rounded-xl bg-muted/30">
+                      <div className="p-2 bg-red-500/10 text-red-500 rounded-lg shrink-0">
+                        <AlertCircle className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">High Priority Complaint</p>
+                        <p className="text-sm text-muted-foreground mt-1">Water logging in Sector 9 needs immediate attention due to heavy rains. Multiple reports generated.</p>
+                        <p className="text-xs text-muted-foreground mt-2">10 mins ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 border border-border rounded-xl bg-muted/30">
+                      <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shrink-0">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">Project Update</p>
+                        <p className="text-sm text-muted-foreground mt-1">Sector 15 Community Hall construction reached 80% completion milestone.</p>
+                        <p className="text-xs text-muted-foreground mt-2">2 hours ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Profile Tab */}
+              {activeTab === "profile" && (
+                <div className="bg-card border border-border rounded-xl p-8 max-w-2xl mx-auto mt-4">
+                  <div className="flex items-center gap-6 mb-8">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shrink-0 text-3xl font-bold shadow-lg">
+                      M
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">MLA Representative</h2>
+                      <p className="text-muted-foreground">mla-const14@gov.in</p>
+                      <span className="inline-block mt-2 px-3 py-1 bg-cyan-500/20 text-cyan-500 rounded-full text-sm font-semibold">Verified Authority</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-sm font-semibold text-muted-foreground block mb-2">Full Name</label>
+                      <input type="text" disabled value="Member of Legislative Assembly" className="w-full p-3 rounded-lg bg-muted border border-border text-foreground" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-muted-foreground block mb-2">Constituency</label>
+                      <input type="text" disabled value="Constituency 14, North District" className="w-full p-3 rounded-lg bg-muted border border-border text-foreground" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-muted-foreground block mb-2">Contact Number</label>
+                      <input type="text" placeholder="+91 98765 43210" className="w-full p-3 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-cyan-500" />
+                    </div>
+                    <button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors">
+                      Save Profile Changes
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === "settings" && (
+                <div className="bg-card border border-border rounded-xl p-8 max-w-2xl mx-auto mt-4">
+                  <h3 className="text-xl font-bold text-foreground mb-6">Account Settings</h3>
+                  
+                  <div className="space-y-6 border-b border-border pb-6 mb-6">
+                    <h4 className="font-semibold text-foreground mb-4">Notifications</h4>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">Email Notifications</p>
+                        <p className="text-sm text-muted-foreground">Receive daily summaries</p>
+                      </div>
+                      <div className="w-12 h-6 bg-cyan-500 rounded-full relative cursor-pointer">
+                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">SMS Alerts</p>
+                        <p className="text-sm text-muted-foreground">Urgent citizen complaints</p>
+                      </div>
+                      <div className="w-12 h-6 bg-muted border border-border rounded-full relative cursor-pointer">
+                        <div className="absolute left-1 top-1 w-4 h-4 bg-muted-foreground rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="font-semibold text-foreground mb-4">Security</h4>
+                    <button className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted transition-colors flex justify-between items-center">
+                      <span className="font-medium text-foreground">Change Password</span>
+                      <Settings className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                    <button className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted transition-colors flex justify-between items-center">
+                      <span className="font-medium text-foreground">Two-Factor Authentication</span>
+                      <span className="text-xs bg-emerald-500/20 text-emerald-500 px-2 py-1 rounded-full font-semibold">Enabled</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </>
