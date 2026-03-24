@@ -70,10 +70,7 @@ export default function CitizenDashboard() {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Complaint resolved", read: false },
-    { id: 2, text: "New project near you", read: false }
-  ])
+  const [notifications, setNotifications] = useState([])
   const [currentZone, setCurrentZone] = useState(null)
   const [nearbyAmenities, setNearbyAmenities] = useState([])
   const [selectedAmenityType, setSelectedAmenityType] = useState("all")
@@ -146,14 +143,43 @@ export default function CitizenDashboard() {
         setGeoResult(data)
 
         if (data.inside && data.projects?.length > 0) {
+          // Add to notifications
+          const newNotifs = data.projects.map((p, index) => ({
+            id: Date.now() + index,
+            text: `📍 Nearby Project: ${p.name}`,
+            read: false
+          }))
+
+          setNotifications(prev => {
+            const existingTexts = new Set(prev.map(n => n.text))
+            const filteredNotifs = newNotifs.filter(n => !existingTexts.has(n.text))
+            if (filteredNotifs.length > 0) {
+              return [...filteredNotifs, ...prev]
+            }
+            return prev
+          })
+
           data.projects.forEach((p) => {
-            toast.success(`📍 ${p.name}`, {
-              description: p.description,
+            toast((t) => (
+              <div className="flex items-start gap-3 w-full">
+                <div className="flex-1">
+                  <strong className="block text-green-500">📍 {p.name}</strong>
+                  <span className="block text-sm text-gray-300 mt-1">{p.description}</span>
+                </div>
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="text-gray-400 hover:text-white shrink-0 mt-0.5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ), {
               duration: 5000,
               style: {
                 background: "#0f172a",
                 color: "#22c55e",
-                border: "1px solid #22c55e"
+                border: "1px solid #22c55e",
+                minWidth: "300px",
               }
             })
           })
@@ -195,8 +221,10 @@ export default function CitizenDashboard() {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
       setUser(JSON.parse(storedUser))
+    } else {
+      router.replace("/login")
     }
-  }, [])
+  }, [router])
 
   return (
     <div className="h-screen flex flex-col">
@@ -212,7 +240,7 @@ export default function CitizenDashboard() {
 
         <div ref={navRef} className="flex gap-3 relative items-center">
 
-          <button 
+          <button
             className="p-2 hover:bg-muted rounded-full transition-colors relative"
             onClick={() => {
               setShowNotifications(!showNotifications)
@@ -220,10 +248,12 @@ export default function CitizenDashboard() {
             }}
           >
             <Bell size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
+            {notifications.some(n => !n.read) && (
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
+            )}
           </button>
 
-          <button 
+          <button
             className="p-2 hover:bg-muted rounded-full transition-colors"
             onClick={() => {
               setShowProfileMenu(!showProfileMenu)
@@ -238,7 +268,12 @@ export default function CitizenDashboard() {
             <div className="absolute right-12 top-10 w-80 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
               <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
                 <h3 className="font-semibold text-foreground">Notifications</h3>
-                <span className="text-xs text-cyan-500 font-medium cursor-pointer">Mark all as read</span>
+                <span
+                  className="text-xs text-cyan-500 font-medium cursor-pointer"
+                  onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                >
+                  Mark all as read
+                </span>
               </div>
               <div className="max-h-[300px] overflow-y-auto">
                 <div className="space-y-1 p-2">
@@ -246,7 +281,10 @@ export default function CitizenDashboard() {
                     <p className="text-muted-foreground text-sm p-2 text-center">No notifications</p>
                   ) : (
                     notifications.map((n) => (
-                      <div key={n.id} className="p-3 rounded-lg hover:bg-muted/50 transition cursor-pointer text-sm">
+                      <div
+                        key={n.id}
+                        className={`p-3 rounded-lg hover:bg-muted/50 transition cursor-pointer text-sm ${!n.read ? 'font-medium bg-muted/30' : ''}`}
+                      >
                         {n.text}
                       </div>
                     ))
@@ -291,14 +329,18 @@ export default function CitizenDashboard() {
             <h2 className="text-xl font-bold text-foreground mb-2">Confirm Logout</h2>
             <p className="text-muted-foreground mb-6">Are you sure you want to sign out of your account?</p>
             <div className="flex gap-3 justify-end">
-              <button 
+              <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="px-4 py-2 rounded-xl text-foreground bg-muted hover:bg-muted/80 transition-colors font-medium"
               >
                 Cancel
               </button>
-              <button 
-                onClick={() => router.push("/login")}
+              <button
+                onClick={() => {
+                  localStorage.removeItem("user")
+                  localStorage.removeItem("token")
+                  router.replace("/login")
+                }}
                 className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
               >
                 Yes, Sign Out
@@ -496,27 +538,35 @@ export default function CitizenDashboard() {
             <>
               {/* Current Zone Card */}
               {currentZone && (
-                <div className="mb-6 p-4 rounded-xl border-2 border-green-500 bg-green-500/10">
-                  <div className="flex items-center justify-between">
+                <div className="mb-6 bg-card border border-cyan-500/30 shadow-[0_4px_20px_-4px_rgba(6,182,212,0.15)] rounded-2xl p-6 relative overflow-hidden transition-all hover:border-cyan-500/50">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-[50px] rounded-full -mr-10 -mt-10" />
+                  <div className="flex items-start justify-between relative z-10">
                     <div>
-                      <p className="text-sm text-green-400 font-semibold">Current Zone</p>
-                      <h2 className="text-xl font-bold text-green-400">{currentZone.name}</h2>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                        </span>
+                        <p className="text-xs text-cyan-500 font-semibold uppercase tracking-wider">Current Zone</p>
+                      </div>
+                      <h2 className="text-2xl font-bold text-foreground mb-1">{currentZone.name}</h2>
                       {currentZone.description && (
-                        <p className="text-sm text-gray-400 mt-1">{currentZone.description}</p>
+                        <p className="text-sm text-muted-foreground max-w-lg">{currentZone.description}</p>
                       )}
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-green-400" />
+                    <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-500/20">
+                      <MapPin className="w-6 h-6 text-cyan-500" />
                     </div>
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    <button onClick={() => setActiveView("map")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
+
+                  <div className="mt-5 flex flex-wrap gap-2 relative z-10">
+                    <button onClick={() => setActiveView("map")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
                       View on Map
                     </button>
-                    <button onClick={() => setActiveView("complaint")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
+                    <button onClick={() => setActiveView("complaint")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
                       Report Issue
                     </button>
-                    <button onClick={() => setActiveView("zones")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
+                    <button onClick={() => setActiveView("zones")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
                       Zone Details
                     </button>
                   </div>
@@ -525,16 +575,28 @@ export default function CitizenDashboard() {
 
               {/* Nearby Development Projects */}
               {geoResult?.inside && geoResult.projects?.length > 0 && (
-                <div className="mb-4 p-4 rounded-xl border border-emerald-500 bg-emerald-500/10">
-                  <p className="text-emerald-400 font-semibold mb-2">
-                    📍 Nearby Development Projects
-                  </p>
-                  {geoResult.projects.map((p, i) => (
-                    <div key={i} className="text-sm mb-2 pb-2 border-b border-emerald-500/20 last:border-0">
-                      <p className="font-semibold">{p.name}</p>
-                      <p className="text-gray-400 text-xs">{p.description}</p>
+                <div className="mb-6 bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-500">
+                      <MapPin className="w-4 h-4" />
                     </div>
-                  ))}
+                    <h3 className="text-lg font-semibold text-foreground">Nearby Development Projects</h3>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {geoResult.projects.map((p, i) => (
+                      <div key={i} className="bg-muted/30 hover:bg-muted/60 border border-border rounded-xl p-4 transition-colors flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-semibold text-foreground text-sm mb-1">{p.name}</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{p.description}</p>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                          <span className="text-[10px] font-medium text-cyan-500 uppercase tracking-wide">In Progress</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

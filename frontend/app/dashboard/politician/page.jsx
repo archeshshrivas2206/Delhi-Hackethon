@@ -98,6 +98,14 @@ export default function PoliticianDashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // Auth check
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user")
+    if (!storedUser) {
+      router.replace("/login")
+    }
+  }, [router])
+
   // Get user's current location on mount
   useEffect(() => {
     if (navigator.geolocation) {
@@ -262,7 +270,11 @@ export default function PoliticianDashboard() {
                 Cancel
               </button>
               <button 
-                onClick={() => router.push("/login")}
+                onClick={() => {
+                  localStorage.removeItem("user")
+                  localStorage.removeItem("token")
+                  router.replace("/login")
+                }}
                 className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
               >
                 Yes, Sign Out
