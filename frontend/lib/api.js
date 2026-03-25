@@ -11,13 +11,13 @@ export const api = {
     })
     return res.json()
   },
-  
+
   // Zones
   getZones: async () => {
     const res = await fetch(`${API_BASE}/zones`)
     return res.json()
   },
-  
+
   getZoneByPoint: async (lat, lng) => {
     const res = await fetch(`${API_BASE}/zones/point`, {
       method: 'POST',
@@ -26,7 +26,7 @@ export const api = {
     })
     return res.json()
   },
-  
+
   // Amenities
   getNearbyAmenities: async (lat, lng, radius = 2, limit = 20) => {
     const res = await fetch(`${API_BASE}/amenities/nearby`, {
@@ -36,9 +36,37 @@ export const api = {
     })
     return res.json()
   },
-  
+
   getAmenitiesByCategory: async (category) => {
     const res = await fetch(`${API_BASE}/amenities/category/${category}`)
+    return res.json()
+  },
+  getMLA: async () => {
+    const res = await fetch(`${API_BASE}/mla`)
+    return res.json()
+  },
+
+  getMLAByConstituency: async (constituency) => {
+    const res = await fetch(`${API_BASE}/mla/constituency/${encodeURIComponent(constituency)}`)
+    return res.json()
+  },
+  getMLAByLocation: async (lat, lng) => {
+    const res = await fetch(`${API_BASE}/mla/by-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lng })
+    })
+    return res.json()
+  },
+
+  // Keep the old getMLA for fallback
+  getMLA: async () => {
+    const res = await fetch(`${API_BASE}/mla`)
+    return res.json()
+  },
+
+  getAllMLAs: async () => {
+    const res = await fetch(`${API_BASE}/mla/all`)
     return res.json()
   }
 }

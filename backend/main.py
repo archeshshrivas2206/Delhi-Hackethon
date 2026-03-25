@@ -8,6 +8,7 @@ from routes import amenities  # Add this import
 from fastapi.middleware.cors import CORSMiddleware
 from routes import auth
 from models.login_log import LoginLog
+from routes import mla
 
 #Base.metadata.create_all(bind=engine)
 
@@ -28,5 +29,6 @@ def home():
 app.include_router(project.router, prefix="/api")
 app.include_router(geofence.router, prefix="/api")
 app.include_router(auth.router)
-app.include_router(zones.router, prefix="/api")      # Add this line
-app.include_router(amenities.router, prefix="/api")  # Add this line
+app.include_router(zones.router, prefix="/api")      
+app.include_router(amenities.router, prefix="/api")  
+app.include_router(mla.router, prefix="/api")

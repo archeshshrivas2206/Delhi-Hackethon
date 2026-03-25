@@ -14,6 +14,8 @@ import MapView from "@/components/MapView"
 import { api } from "@/lib/api"
 import NotificationCenter from "@/components/dashboard/NotificationCenter"
 import ZoneCard from "@/components/dashboard/ZoneCard"
+import MLACard from "@/components/mla/MLACard"
+
 
 // Category icons mapping for amenities
 const categoryIcons = {
@@ -76,6 +78,8 @@ export default function CitizenDashboard() {
       timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
     }
   ])
+  const [mlaData, setMlaData] = useState(null)
+  const [loadingMLA, setLoadingMLA] = useState(false)
   const [currentZone, setCurrentZone] = useState(null)
   const [nearbyAmenities, setNearbyAmenities] = useState([])
   const [selectedAmenityType, setSelectedAmenityType] = useState("all")
@@ -185,8 +189,8 @@ export default function CitizenDashboard() {
   useEffect(() => {
     if (currentZone) {
       const existingZoneNotification = notifications.some(
-        n => n.text?.includes(currentZone.name) && n.type === "zone" && 
-             (Date.now() - new Date(n.timestamp).getTime() < 10000)
+        n => n.text?.includes(currentZone.name) && n.type === "zone" &&
+          (Date.now() - new Date(n.timestamp).getTime() < 10000)
       )
       if (!existingZoneNotification) {
         addNotification(
@@ -212,14 +216,14 @@ export default function CitizenDashboard() {
           const existingProjectNotifications = notifications
             .filter(n => n.type === "project")
             .map(n => n.text)
-          
+
           data.projects.forEach((p) => {
             const notificationText = `🏗️ ${p.name}: ${p.description}`
-            
+
             const alreadyNotified = existingProjectNotifications.some(
               text => text.includes(p.name)
             )
-            
+
             if (!alreadyNotified) {
               toast.success(`📍 ${p.name}`, {
                 description: p.description,
@@ -279,6 +283,86 @@ export default function CitizenDashboard() {
       router.replace("/login")
     }
   }, [router])
+
+  {/* ================= MLA VIEW ================= */}
+{activeView === "mla" && (
+  <div className="max-w-5xl mx-auto">
+    <div className="mb-6 flex items-center justify-between">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Know Your Representative</h1>
+        <p className="text-muted-foreground mt-1">
+          {userLocation 
+            ? `MLA for your current location (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})`
+            : "Information about your MLA and their work in your constituency"}
+        </p>
+      </div>
+      <button
+        onClick={async () => {
+          try {
+            const data = await api.getAllMLAs()
+            console.log("All MLAs:", data)
+            // Optionally show a modal or navigate to all MLAs view
+          } catch (error) {
+            console.error("Failed to fetch all MLAs:", error)
+          }
+        }}
+        className="text-sm text-cyan-400 hover:text-cyan-300"
+      >
+        View All MLAs →
+      </button>
+    </div>
+    {loadingMLA ? (
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <div className="animate-pulse">
+          <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4"></div>
+          <div className="h-4 bg-muted rounded w-1/3 mx-auto mb-2"></div>
+          <div className="h-3 bg-muted rounded w-1/2 mx-auto"></div>
+        </div>
+        <p className="text-muted-foreground mt-4">Loading MLA information...</p>
+      </div>
+    ) : mlaData ? (
+      <MLACard mla={mlaData} />
+    ) : (
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-muted-foreground">Unable to load MLA information for your location</p>
+        <button 
+          onClick={async () => {
+            try {
+              const data = await api.getMLA()
+              setMlaData(data)
+            } catch (error) {
+              console.error("Failed to fetch default MLA:", error)
+            }
+          }}
+          className="mt-4 text-sm text-cyan-400 hover:text-cyan-300"
+        >
+          Load Default MLA
+        </button>
+      </div>
+    )}
+  </div>
+)}
+
+  // Fetch MLA data based on user location
+  useEffect(() => {
+    const fetchMLA = async () => {
+      if (!userLocation) return
+
+      try {
+        setLoadingMLA(true)
+        // Call the location-based MLA endpoint with user's coordinates
+        const data = await api.getMLAByLocation(userLocation.lat, userLocation.lng)
+        setMlaData(data)
+        console.log("👤 MLA data loaded for location:", data.name, "in constituency:", data.constituency)
+      } catch (error) {
+        console.error("Failed to fetch MLA data:", error)
+      } finally {
+        setLoadingMLA(false)
+      }
+    }
+
+    fetchMLA()
+  }, [userLocation]) // This will re-run when userLocation changes
 
   return (
     <div className="h-screen flex flex-col">
@@ -446,6 +530,18 @@ export default function CitizenDashboard() {
                 <MapIcon /> Development Zones
               </button>
 
+              {/* MLA Button - Added to Sidebar */}
+              <button
+                onClick={() => setActiveView("mla")}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "mla"
+                  ? "bg-purple-500/10 text-purple-400"
+                  : "text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                <span className="text-lg">👨‍⚖️</span>
+                <span>Know Your MLA</span>
+              </button>
+
               <button onClick={() => setActiveView("setting")} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "setting"
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-muted-foreground hover:bg-muted"
@@ -597,10 +693,38 @@ export default function CitizenDashboard() {
             </div>
           )}
 
+          {/* ================= MLA VIEW ================= */}
+          {activeView === "mla" && (
+            <div className="max-w-5xl mx-auto">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-foreground">Know Your Representative</h1>
+                <p className="text-muted-foreground mt-1">
+                  Information about your MLA and their work in your constituency
+                </p>
+              </div>
+              {loadingMLA ? (
+                <div className="bg-card border border-border rounded-xl p-8 text-center">
+                  <div className="animate-pulse">
+                    <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4"></div>
+                    <div className="h-4 bg-muted rounded w-1/3 mx-auto mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-1/2 mx-auto"></div>
+                  </div>
+                  <p className="text-muted-foreground mt-4">Loading MLA information...</p>
+                </div>
+              ) : mlaData ? (
+                <MLACard mla={mlaData} />
+              ) : (
+                <div className="bg-card border border-border rounded-xl p-8 text-center">
+                  <p className="text-muted-foreground">Unable to load MLA information</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ================= DASHBOARD ================= */}
           {activeView === "dashboard" && (
             <>
-              {/* Current Zone Card - Enhanced with teammate's styling */}
+              {/* Current Zone Card - Enhanced with Zone Highlights */}
               {currentZone && (
                 <div className="mb-6 bg-card border border-cyan-500/30 shadow-[0_4px_20px_-4px_rgba(6,182,212,0.15)] rounded-2xl p-6 relative overflow-hidden transition-all hover:border-cyan-500/50">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-[50px] rounded-full -mr-10 -mt-10" />
@@ -616,6 +740,18 @@ export default function CitizenDashboard() {
                       <h2 className="text-2xl font-bold text-foreground mb-1">{currentZone.name}</h2>
                       {currentZone.description && (
                         <p className="text-sm text-muted-foreground max-w-lg">{currentZone.description}</p>
+                      )}
+
+                      {/* Zone Highlights */}
+                      {currentZone.highlights && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {currentZone.highlights.map((highlight, idx) => (
+                            <span key={idx} className="text-xs bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded-full flex items-center gap-1">
+                              <span>{highlight.icon}</span>
+                              <span>{highlight.text}</span>
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-500/20">
@@ -821,6 +957,13 @@ export default function CitizenDashboard() {
                       )}
                     </div>
                     {zone.description && <p className="text-sm text-muted-foreground mb-3">{zone.description}</p>}
+                    {zone.highlights && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {zone.highlights.slice(0, 2).map((h, idx) => (
+                          <span key={idx} className="text-xs text-muted-foreground">{h.icon}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
