@@ -534,11 +534,11 @@ export default function CitizenDashboard() {
               <button
                 onClick={() => setActiveView("mla")}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeView === "mla"
-                  ? "bg-purple-500/10 text-purple-400"
+                  ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium"
                   : "text-muted-foreground hover:bg-muted"
                   }`}
               >
-                <span className="text-lg">👨‍⚖️</span>
+                <User className="w-[18px] h-[18px]" strokeWidth={2} />
                 <span>Know Your MLA</span>
               </button>
 

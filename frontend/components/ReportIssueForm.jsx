@@ -1,13 +1,13 @@
 "use client"
 import { useState } from "react"
-import { MapPin, AlertCircle } from "lucide-react"
-
+import { MapPin, AlertCircle, CheckCircle } from "lucide-react"
 export default function ReportIssueForm({ userLocation }) {
   const [formData, setFormData] = useState({
     category: "",
     description: "",
     image: null,
   })
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -20,7 +20,7 @@ export default function ReportIssueForm({ userLocation }) {
     }
 
     console.log(data)
-    alert("Complaint submitted!")
+    setShowSuccessDialog(true)
   }
 
   return (
@@ -88,6 +88,28 @@ export default function ReportIssueForm({ userLocation }) {
         </button>
 
       </form>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl border border-gray-100 m-4 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#0acc8b]/20 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-[#0acc8b]" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
+            <p className="text-gray-600 mb-6">Your complaint has been submitted successfully and is now pending review.</p>
+            <button
+              onClick={() => {
+                setShowSuccessDialog(false)
+                setFormData({ category: "", description: "", image: null })
+              }}
+              className="w-full bg-[#0acc8b] hover:bg-[#09b87d] text-white py-3 rounded-xl font-bold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-[#0acc8b]/30"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
