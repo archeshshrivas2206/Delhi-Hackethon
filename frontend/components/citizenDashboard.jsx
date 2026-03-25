@@ -112,6 +112,11 @@ export default function CitizenDashboard() {
     setNotifications([])
   }
 
+  // Mark all as read (from teammate's dropdown)
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  }
+
   // Handle click outside for dropdowns
   useEffect(() => {
     function handleClickOutside(event) {
@@ -181,7 +186,7 @@ export default function CitizenDashboard() {
     if (currentZone) {
       const existingZoneNotification = notifications.some(
         n => n.text?.includes(currentZone.name) && n.type === "zone" && 
-             (Date.now() - new Date(n.timestamp).getTime() < 10000) // Only prevent if within last 10 seconds
+             (Date.now() - new Date(n.timestamp).getTime() < 10000)
       )
       if (!existingZoneNotification) {
         addNotification(
@@ -204,7 +209,6 @@ export default function CitizenDashboard() {
         setGeoResult(data)
 
         if (data.inside && data.projects?.length > 0) {
-          // Track which projects we've already notified about
           const existingProjectNotifications = notifications
             .filter(n => n.type === "project")
             .map(n => n.text)
@@ -212,7 +216,6 @@ export default function CitizenDashboard() {
           data.projects.forEach((p) => {
             const notificationText = `🏗️ ${p.name}: ${p.description}`
             
-            // Only add if not already notified in last minute
             const alreadyNotified = existingProjectNotifications.some(
               text => text.includes(p.name)
             )
@@ -272,8 +275,10 @@ export default function CitizenDashboard() {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
       setUser(JSON.parse(storedUser))
+    } else {
+      router.replace("/login")
     }
-  }, [])
+  }, [router])
 
   return (
     <div className="h-screen flex flex-col">
@@ -295,10 +300,10 @@ export default function CitizenDashboard() {
             onClick={() => {
               setNotificationCenterOpen(true)
               setShowProfileMenu(false)
+              setShowNotifications(false)
             }}
           >
             <Bell size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
-            {/* Unread Badge */}
             {notifications.filter(n => !n.read).length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-background">
                 {notifications.filter(n => !n.read).length}
@@ -312,10 +317,49 @@ export default function CitizenDashboard() {
             onClick={() => {
               setShowProfileMenu(!showProfileMenu)
               setNotificationCenterOpen(false)
+              setShowNotifications(false)
             }}
           >
             <User size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
           </button>
+
+          {/* Notification Dropdown (teammate's feature) */}
+          {showNotifications && (
+            <div className="absolute right-12 top-10 w-80 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
+              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+                <h3 className="font-semibold text-foreground">Notifications</h3>
+                <span
+                  className="text-xs text-cyan-500 font-medium cursor-pointer"
+                  onClick={markAllAsRead}
+                >
+                  Mark all as read
+                </span>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                <div className="space-y-1 p-2">
+                  {notifications.length === 0 ? (
+                    <p className="text-muted-foreground text-sm p-2 text-center">No notifications</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`p-3 rounded-lg hover:bg-muted/50 transition cursor-pointer text-sm ${!n.read ? 'font-medium bg-muted/30' : ''}`}
+                        onClick={() => markAsRead(n.id)}
+                      >
+                        {n.text}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div
+                  onClick={() => { setActiveView("notifications"); setShowNotifications(false) }}
+                  className="p-4 border-t border-border hover:bg-muted/50 transition cursor-pointer text-center"
+                >
+                  <span className="text-sm text-cyan-500 font-medium">View all notifications</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Dropdown */}
           {showProfileMenu && (
@@ -354,7 +398,11 @@ export default function CitizenDashboard() {
                 Cancel
               </button>
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => {
+                  localStorage.removeItem("user")
+                  localStorage.removeItem("token")
+                  router.replace("/login")
+                }}
                 className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
               >
                 Yes, Sign Out
@@ -552,21 +600,67 @@ export default function CitizenDashboard() {
           {/* ================= DASHBOARD ================= */}
           {activeView === "dashboard" && (
             <>
-              {/* Current Zone Card - Simplified */}
-              <ZoneCard zone={currentZone} onViewMap={() => setActiveView("map")} />
+              {/* Current Zone Card - Enhanced with teammate's styling */}
+              {currentZone && (
+                <div className="mb-6 bg-card border border-cyan-500/30 shadow-[0_4px_20px_-4px_rgba(6,182,212,0.15)] rounded-2xl p-6 relative overflow-hidden transition-all hover:border-cyan-500/50">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-[50px] rounded-full -mr-10 -mt-10" />
+                  <div className="flex items-start justify-between relative z-10">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                        </span>
+                        <p className="text-xs text-cyan-500 font-semibold uppercase tracking-wider">Current Zone</p>
+                      </div>
+                      <h2 className="text-2xl font-bold text-foreground mb-1">{currentZone.name}</h2>
+                      {currentZone.description && (
+                        <p className="text-sm text-muted-foreground max-w-lg">{currentZone.description}</p>
+                      )}
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-500/20">
+                      <MapPin className="w-6 h-6 text-cyan-500" />
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2 relative z-10">
+                    <button onClick={() => setActiveView("map")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
+                      View on Map
+                    </button>
+                    <button onClick={() => setActiveView("complaint")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
+                      Report Issue
+                    </button>
+                    <button onClick={() => setActiveView("zones")} className="text-sm px-4 py-2 bg-muted hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 rounded-lg text-foreground hover:text-cyan-400 transition-colors">
+                      Zone Details
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Nearby Development Projects */}
               {geoResult?.inside && geoResult.projects?.length > 0 && (
-                <div className="mb-4 p-4 rounded-xl border border-emerald-500 bg-emerald-500/10">
-                  <p className="text-emerald-400 font-semibold mb-2">
-                    📍 Nearby Development Projects
-                  </p>
-                  {geoResult.projects.map((p, i) => (
-                    <div key={i} className="text-sm mb-2 pb-2 border-b border-emerald-500/20 last:border-0">
-                      <p className="font-semibold">{p.name}</p>
-                      <p className="text-gray-400 text-xs">{p.description}</p>
+                <div className="mb-6 bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-500">
+                      <MapPin className="w-4 h-4" />
                     </div>
-                  ))}
+                    <h3 className="text-lg font-semibold text-foreground">Nearby Development Projects</h3>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {geoResult.projects.map((p, i) => (
+                      <div key={i} className="bg-muted/30 hover:bg-muted/60 border border-border rounded-xl p-4 transition-colors flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-semibold text-foreground text-sm mb-1">{p.name}</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{p.description}</p>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                          <span className="text-[10px] font-medium text-cyan-500 uppercase tracking-wide">In Progress</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -815,7 +909,7 @@ export default function CitizenDashboard() {
         </main>
       </div>
 
-      {/* Notification Center */}
+      {/* Notification Center - Your component */}
       <NotificationCenter
         isOpen={notificationCenterOpen}
         onClose={() => setNotificationCenterOpen(false)}
