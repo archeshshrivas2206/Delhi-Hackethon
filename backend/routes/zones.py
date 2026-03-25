@@ -91,8 +91,14 @@ def get_zones():
 
 @router.post("/zones/point")
 def get_zone_by_point(data: PointRequest):
-    """Find which zone contains the given point"""
+    """Find which zone contains the given point - Fallback to Bharat Mandapam if none found"""
     for zone in ALL_ZONES:
         if is_point_in_polygon([data.lat, data.lng], zone["coordinates"]):
             return zone
-    return {"message": "Not in any zone", "inside": False}
+    
+    # If not in any zone, default to Bharat Mandapam zone
+    print(f"📍 Location {data.lat}, {data.lng} not in any zone - defaulting to Bharat Mandapam")
+    return {
+        **BHARAT_MANDAPAM_ZONE,
+        "message": "Default zone (Bharat Mandapam)"
+    }
