@@ -12,6 +12,8 @@ import ReportIssueForm from "@/components/ReportIssueForm"
 import toast from "react-hot-toast"
 import MapView from "@/components/MapView"
 import { api } from "@/lib/api"
+import NotificationCenter from "@/components/dashboard/NotificationCenter"
+import ZoneCard from "@/components/dashboard/ZoneCard"
 
 // Category icons mapping for amenities
 const categoryIcons = {
@@ -44,7 +46,6 @@ const categories = [
 ]
 
 /* -------------------- COMPONENT -------------------- */
-
 export default function CitizenDashboard() {
   const router = useRouter()
 
@@ -58,8 +59,60 @@ export default function CitizenDashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
+  const [notifications, setNotifications] = useState([
+    {
+      id: "init-1",
+      text: "✅ Complaint #123 has been resolved",
+      type: "complaint",
+      read: false,
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: "init-2",
+      text: "📍 New project 'Smart City Development' near your area",
+      type: "project",
+      read: false,
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  ])
+  const [currentZone, setCurrentZone] = useState(null)
+  const [nearbyAmenities, setNearbyAmenities] = useState([])
+  const [selectedAmenityType, setSelectedAmenityType] = useState("all")
+  const [zonesList, setZonesList] = useState([])
+  const [loading, setLoading] = useState({
+    amenities: true,
+    zones: true
+  })
 
   const navRef = useRef(null)
+
+  // Add notification function with unique ID
+  const addNotification = (message, type = "info", link = null) => {
+    const newNotification = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      text: message,
+      type,
+      link,
+      timestamp: new Date().toISOString(),
+      read: false
+    }
+    setNotifications(prev => [newNotification, ...prev])
+  }
+
+  // Mark notification as read
+  const markAsRead = (id) => {
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    )
+  }
+
+  // Clear all notifications
+  const clearAllNotifications = () => {
+    setNotifications([])
+  }
+
+  // Handle click outside for dropdowns
   useEffect(() => {
     function handleClickOutside(event) {
       if (navRef.current && !navRef.current.contains(event.target)) {
@@ -70,18 +123,6 @@ export default function CitizenDashboard() {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Complaint resolved", read: false },
-    { id: 2, text: "New project near you", read: false }
-  ])
-  const [currentZone, setCurrentZone] = useState(null)
-  const [nearbyAmenities, setNearbyAmenities] = useState([])
-  const [selectedAmenityType, setSelectedAmenityType] = useState("all")
-  const [zonesList, setZonesList] = useState([])
-  const [loading, setLoading] = useState({
-    amenities: true,
-    zones: true
-  })
 
   /* -------------------- LOCATION -------------------- */
   useEffect(() => {
@@ -135,6 +176,23 @@ export default function CitizenDashboard() {
     findZone()
   }, [userLocation, zonesList])
 
+  // Add notification when entering zone - PREVENT DUPLICATES
+  useEffect(() => {
+    if (currentZone) {
+      const existingZoneNotification = notifications.some(
+        n => n.text?.includes(currentZone.name) && n.type === "zone" && 
+             (Date.now() - new Date(n.timestamp).getTime() < 10000) // Only prevent if within last 10 seconds
+      )
+      if (!existingZoneNotification) {
+        addNotification(
+          `📍 You entered ${currentZone.name}`,
+          "zone",
+          "/dashboard/citizen?view=map"
+        )
+      }
+    }
+  }, [currentZone])
+
   // Location check with backend API
   useEffect(() => {
     if (!userLocation) return
@@ -146,16 +204,35 @@ export default function CitizenDashboard() {
         setGeoResult(data)
 
         if (data.inside && data.projects?.length > 0) {
+          // Track which projects we've already notified about
+          const existingProjectNotifications = notifications
+            .filter(n => n.type === "project")
+            .map(n => n.text)
+          
           data.projects.forEach((p) => {
-            toast.success(`📍 ${p.name}`, {
-              description: p.description,
-              duration: 5000,
-              style: {
-                background: "#0f172a",
-                color: "#22c55e",
-                border: "1px solid #22c55e"
-              }
-            })
+            const notificationText = `🏗️ ${p.name}: ${p.description}`
+            
+            // Only add if not already notified in last minute
+            const alreadyNotified = existingProjectNotifications.some(
+              text => text.includes(p.name)
+            )
+            
+            if (!alreadyNotified) {
+              toast.success(`📍 ${p.name}`, {
+                description: p.description,
+                duration: 5000,
+                style: {
+                  background: "#0f172a",
+                  color: "#22c55e",
+                  border: "1px solid #22c55e"
+                }
+              })
+              addNotification(
+                notificationText,
+                "project",
+                "/dashboard/citizen?view=map"
+              )
+            }
           })
         }
       } catch (error) {
@@ -212,56 +289,35 @@ export default function CitizenDashboard() {
 
         <div ref={navRef} className="flex gap-3 relative items-center">
 
-          <button 
+          {/* Notification Bell with Badge */}
+          <button
             className="p-2 hover:bg-muted rounded-full transition-colors relative"
             onClick={() => {
-              setShowNotifications(!showNotifications)
+              setNotificationCenterOpen(true)
               setShowProfileMenu(false)
             }}
           >
             <Bell size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
+            {/* Unread Badge */}
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-background">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
           </button>
 
-          <button 
+          {/* Profile Button */}
+          <button
             className="p-2 hover:bg-muted rounded-full transition-colors"
             onClick={() => {
               setShowProfileMenu(!showProfileMenu)
-              setShowNotifications(false)
+              setNotificationCenterOpen(false)
             }}
           >
             <User size={28} className="text-muted-foreground hover:text-cyan-500 transition-colors" />
           </button>
 
-
-          {showNotifications && (
-            <div className="absolute right-12 top-10 w-80 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50">
-              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
-                <h3 className="font-semibold text-foreground">Notifications</h3>
-                <span className="text-xs text-cyan-500 font-medium cursor-pointer">Mark all as read</span>
-              </div>
-              <div className="max-h-[300px] overflow-y-auto">
-                <div className="space-y-1 p-2">
-                  {notifications.length === 0 ? (
-                    <p className="text-muted-foreground text-sm p-2 text-center">No notifications</p>
-                  ) : (
-                    notifications.map((n) => (
-                      <div key={n.id} className="p-3 rounded-lg hover:bg-muted/50 transition cursor-pointer text-sm">
-                        {n.text}
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div
-                  onClick={() => { setActiveView("notifications"); setShowNotifications(false) }}
-                  className="p-4 border-t border-border hover:bg-muted/50 transition cursor-pointer text-center"
-                >
-                  <span className="text-sm text-cyan-500 font-medium">View all notifications</span>
-                </div>
-              </div>
-            </div>
-          )}
-
+          {/* Profile Dropdown */}
           {showProfileMenu && (
             <div className="absolute right-0 top-10 w-56 bg-card border rounded-xl shadow-lg p-3 z-50">
               <p className="font-semibold">{user?.name || "Guest"}</p>
@@ -291,13 +347,13 @@ export default function CitizenDashboard() {
             <h2 className="text-xl font-bold text-foreground mb-2">Confirm Logout</h2>
             <p className="text-muted-foreground mb-6">Are you sure you want to sign out of your account?</p>
             <div className="flex gap-3 justify-end">
-              <button 
+              <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="px-4 py-2 rounded-xl text-foreground bg-muted hover:bg-muted/80 transition-colors font-medium"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => router.push("/login")}
                 className="px-4 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors font-medium shadow-lg shadow-red-500/25"
               >
@@ -446,7 +502,9 @@ export default function CitizenDashboard() {
                       </div>
                       <div>
                         <p className="font-semibold text-foreground">{n.text}</p>
-                        <p className="text-xs text-muted-foreground mt-2">Just now</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {new Date(n.timestamp).toLocaleDateString()} {new Date(n.timestamp).toLocaleTimeString()}
+                        </p>
                       </div>
                     </div>
                   ))
@@ -494,34 +552,8 @@ export default function CitizenDashboard() {
           {/* ================= DASHBOARD ================= */}
           {activeView === "dashboard" && (
             <>
-              {/* Current Zone Card */}
-              {currentZone && (
-                <div className="mb-6 p-4 rounded-xl border-2 border-green-500 bg-green-500/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-green-400 font-semibold">Current Zone</p>
-                      <h2 className="text-xl font-bold text-green-400">{currentZone.name}</h2>
-                      {currentZone.description && (
-                        <p className="text-sm text-gray-400 mt-1">{currentZone.description}</p>
-                      )}
-                    </div>
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-green-400" />
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    <button onClick={() => setActiveView("map")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
-                      View on Map
-                    </button>
-                    <button onClick={() => setActiveView("complaint")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
-                      Report Issue
-                    </button>
-                    <button onClick={() => setActiveView("zones")} className="text-xs px-3 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition">
-                      Zone Details
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Current Zone Card - Simplified */}
+              <ZoneCard zone={currentZone} onViewMap={() => setActiveView("map")} />
 
               {/* Nearby Development Projects */}
               {geoResult?.inside && geoResult.projects?.length > 0 && (
@@ -782,6 +814,15 @@ export default function CitizenDashboard() {
           )}
         </main>
       </div>
+
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={notificationCenterOpen}
+        onClose={() => setNotificationCenterOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={markAsRead}
+        onClearAll={clearAllNotifications}
+      />
     </div>
   )
 }
