@@ -3,8 +3,8 @@ from database.db import engine, Base
 from models.project import Project
 from routes import project
 from routes import geofence
-from routes import zones  # Add this import
-from routes import amenities  # Add this import
+from routes import zones  
+from routes import amenities  
 from fastapi.middleware.cors import CORSMiddleware
 from routes import auth
 from models.login_log import LoginLog
