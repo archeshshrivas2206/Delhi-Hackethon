@@ -30,9 +30,9 @@ BHARAT_MANDAPAM_ZONE = {
     ],
     "highlights": [
         {"text": "G20 Summit 2023 Venue", "icon": "🌍"},
-        {"text": "India Gate", "icon": "🗽"},
+        {"text": "India Gate", "icon": "🏛️"},
         {"text": "Connaught Place", "icon": "🛍️"},
-        {"text": "Parliament House", "icon": "🏛️"},
+        {"text": "Parliament House", "icon": "🏦"},
         {"text": "LEED Gold Certified", "icon": "🏆"}
     ],
     "facts": {
