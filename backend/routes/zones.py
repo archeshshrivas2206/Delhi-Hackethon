@@ -5,51 +5,80 @@ from utils.geofence import is_point_in_polygon
 
 router = APIRouter()
 
-# Zone 1: Bharat Mandapam (Delhi)
+
+# Zone 1: New Delhi Constituency (Expanded to actual ward size)
 BHARAT_MANDAPAM_ZONE = {
     "id": 1,
-    "name": "Pragati Maidan - Bharat Mandapam",
-    "description": "India's premier convention and exhibition center, inaugurated in 2023. Hosted the G20 Summit and is a landmark of modern Indian infrastructure.",
+    "name": "New Delhi Constituency",
+    "description": "Delhi Assembly Constituency covering Pragati Maidan, India Gate, Connaught Place, Parliament House, and Central Delhi. Home to India's most important government and cultural institutions.",
     "color": "#22c55e",
     "coordinates": [
-        [28.6115, 77.2390],
-        [28.6115, 77.2450],
-        [28.6175, 77.2450],
-        [28.6175, 77.2390],
-        [28.6115, 77.2390]
+        # Northern boundary (near Connaught Place)
+        [28.6350, 77.2050],
+        [28.6350, 77.2350],
+        # Eastern boundary (near Pragati Maidan)
+        [28.6250, 77.2450],
+        [28.6150, 77.2450],
+        # Southern boundary (near India Gate)
+        [28.6000, 77.2400],
+        [28.5950, 77.2250],
+        # Western boundary (near Parliament)
+        [28.6050, 77.2000],
+        [28.6200, 77.2000],
+        # Close back to start
+        [28.6350, 77.2050]
     ],
     "highlights": [
         {"text": "G20 Summit 2023 Venue", "icon": "🌍"},
-        {"text": "LEED Gold Certified", "icon": "🏆"},
-        {"text": "25,000+ Capacity", "icon": "👥"}
-    ]
+        {"text": "India Gate", "icon": "🗽"},
+        {"text": "Connaught Place", "icon": "🛍️"},
+        {"text": "Parliament House", "icon": "🏛️"},
+        {"text": "LEED Gold Certified", "icon": "🏆"}
+    ],
+    "facts": {
+        "area": "60 sq km",
+        "population": "250,000+",
+        "constituency": "New Delhi (No. 40)"
+    }
 }
 
 # Zone 2: Paharganj (Delhi)
 PAHARGANJ_ZONE = {
     "id": 2,
-    "name": "Paharganj - Main Bazaar",
-    "description": "Vibrant commercial and tourist hub, known for markets, budget hotels, and proximity to New Delhi Railway Station. A historic area with rich cultural diversity.",
+    "name": "Ballimaran Constituency - Paharganj",
+    "description": "Delhi Assembly Constituency No. 22 covering Paharganj, Sadar Bazar, parts of Chandni Chowk, and surrounding areas. A historic commercial and residential hub.",
     "color": "#f59e0b",
     "coordinates": [
-        [28.6450, 77.2100],
-        [28.6450, 77.2200],
-        [28.6550, 77.2200],
-        [28.6550, 77.2100],
-        [28.6450, 77.2100]
+        # Northern boundary (near Sadar Bazar)
+        [28.6600, 77.2100],
+        [28.6600, 77.2350],
+        # Eastern boundary (near Chandni Chowk)
+        [28.6550, 77.2400],
+        [28.6450, 77.2400],
+        # Southern boundary (near New Delhi Railway Station)
+        [28.6350, 77.2300],
+        [28.6350, 77.2150],
+        # Western boundary (near Paharganj Main Bazaar)
+        [28.6450, 77.2080],
+        [28.6550, 77.2080],
+        # Close back to start
+        [28.6600, 77.2100]
     ],
     "highlights": [
         {"text": "New Delhi Railway Station", "icon": "🚂"},
         {"text": "Main Bazaar Market", "icon": "🛍️"},
-        {"text": "Budget Hotels Hub", "icon": "🏨"},
+        {"text": "Sadar Bazar", "icon": "🏪"},
+        {"text": "Chandni Chowk", "icon": "🕌"},
         {"text": "Street Food Paradise", "icon": "🍛"}
     ],
     "facts": {
-        "area": "2.5 sq km",
-        "population": "50,000+",
-        "established": "1950s"
+        "area": "3.5 sq km",
+        "population": "150,000+",
+        "established": "1950s",
+        "constituency": "Ballimaran (No. 22)"
     }
 }
+
 
 # Zone 3: Sudama Nagar (Indore)
 SUDAMA_NAGAR_ZONE = {

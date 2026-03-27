@@ -6,104 +6,102 @@ from utils.geofence import is_point_in_polygon
 router = APIRouter()
 
 # MLA Data for New Delhi Constituency (Bharat Mandapam area)
+# MLA Data for New Delhi Constituency (Bharat Mandapam area) - Updated 2025
 NEW_DELHI_MLA = {
     "id": 1,
-    "name": "Arvind Kejriwal",
+    "name": "Parvesh Sahib Singh Verma",
     "constituency": "New Delhi",
-    "party": "Aam Aadmi Party (AAP)",
-    "party_color": "#00BFFF",
-    "party_symbol": "🧹",
-    "since": "2013",
-    "office_address": "Kaushalya Park, New Delhi - 110001",
-    "phone": "011-23392123",
-    "email": "cm.delhi@nic.in",
+    "party": "Bharatiya Janata Party (BJP)",
+    "party_color": "#FF9933",  # BJP saffron color
+    "party_symbol": "🪷",  # Lotus symbol
+    "since": "2025",
+    "office_address": "New Delhi Constituency Office, Windsor Place, New Delhi",
+    "phone": "9910661000",
+    "email": "office.parveshsahibsingh@gmail.com",
     "website": "delhi.gov.in",
-    "bio": "Chief Minister of Delhi since 2015. Architect of the 'Delhi Model' focusing on education, healthcare, and infrastructure. Awarded the Ramon Magsaysay Award for transformative governance.",
+    "bio": "Parvesh Sahib Singh Verma is a senior BJP leader and current MLA from New Delhi. He has previously served as Member of Parliament from West Delhi and focuses on infrastructure, civic development, and urban governance.",
     
     "achievements": [
         {
-            "title": "Education Revolution",
-            "description": "Transformed government schools with modern infrastructure, new classrooms, and improved student outcomes.",
-            "year": "2015-2025",
-            "icon": "📚",
-            "color": "#3b82f6",
-            "stats": {"label": "Schools Upgraded", "value": "1,200+", "progress": 100},
-            "sub_stats": [
-                {"label": "New Classrooms", "value": "5,000+"},
-                {"label": "Student Achievement", "value": "90% pass rate"},
-                {"label": "Budget Allocation", "value": "₹15,000 Cr"}
-            ]
-        },
-        {
-            "title": "Mohalla Clinics",
-            "description": "Free primary healthcare centers providing quality medical care to all residents.",
-            "year": "2016-2025",
-            "icon": "🏥",
-            "color": "#10b981",
-            "stats": {"label": "Clinics Established", "value": "500+", "progress": 100},
-            "sub_stats": [
-                {"label": "Patients Served", "value": "2.5 Cr+"},
-                {"label": "Free Medicines", "value": "100+ types"},
-                {"label": "Budget", "value": "₹800 Cr"}
-            ]
-        },
-        {
-            "title": "Power & Water Reforms",
-            "description": "Subsidized electricity and water for residents with 24/7 supply improvements.",
-            "year": "2015-2025",
-            "icon": "💡",
-            "color": "#f59e0b",
-            "stats": {"label": "Free Electricity", "value": "200 units", "progress": 100},
-            "sub_stats": [
-                {"label": "Free Water", "value": "20,000 liters"},
-                {"label": "Beneficiaries", "value": "50 Lakh+"},
-                {"label": "Annual Subsidy", "value": "₹3,200 Cr"}
-            ]
-        },
-        {
             "title": "Infrastructure Development",
-            "description": "Construction of new flyovers, road improvements, and beautification projects.",
-            "year": "2020-2025",
+            "description": "Improvement of roads, flyovers, and public infrastructure across Delhi.",
+            "year": "2014-2025",
             "icon": "🛣️",
             "color": "#ef4444",
-            "stats": {"label": "Roads Built", "value": "200+ km", "progress": 85},
+            "stats": {"label": "Road Projects Completed", "value": "200+ km", "progress": 90},
             "sub_stats": [
                 {"label": "Flyovers", "value": "15+"},
-                {"label": "Foot Overbridges", "value": "50+"},
+                {"label": "Roads Improved", "value": "200+ km"},
+                {"label": "Budget Allocation", "value": "₹10,000 Cr"}
+            ]
+        },
+        {
+            "title": "Public Welfare Initiatives",
+            "description": "Worked on sanitation, housing schemes, and welfare programs for citizens.",
+            "year": "2015-2025",
+            "icon": "👥",
+            "color": "#10b981",
+            "stats": {"label": "Beneficiaries", "value": "1M+", "progress": 100},
+            "sub_stats": [
+                {"label": "Citizens Benefited", "value": "1M+"},
+                {"label": "Schemes", "value": "25+"},
                 {"label": "Budget", "value": "₹5,000 Cr"}
+            ]
+        },
+        {
+            "title": "Cleanliness & Civic Improvements",
+            "description": "Focused on sanitation drives and waste management across the constituency.",
+            "year": "2016-2025",
+            "icon": "🧹",
+            "color": "#3b82f6",
+            "stats": {"label": "Areas Covered", "value": "100+", "progress": 85},
+            "sub_stats": [
+                {"label": "Cleanliness Drives", "value": "300+"},
+                {"label": "Areas Covered", "value": "100+"},
+                {"label": "Impact", "value": "High"}
+            ]
+        },
+        {
+            "title": "Digital Governance",
+            "description": "Promoted digital governance and online services for better citizen engagement.",
+            "year": "2018-2025",
+            "icon": "💻",
+            "color": "#8b5cf6",
+            "stats": {"label": "Services Digitized", "value": "20+", "progress": 95},
+            "sub_stats": [
+                {"label": "Services", "value": "20+"},
+                {"label": "Users Impacted", "value": "500K+"},
+                {"label": "Efficiency", "value": "Fast"}
             ]
         }
     ],
     
     "promises_kept": [
-        {"text": "Free electricity up to 200 units per month", "completed": True},
-        {"text": "Free water up to 20,000 liters per month", "completed": True},
-        {"text": "500+ Mohalla clinics established", "completed": True},
-        {"text": "Government schools infrastructure upgraded", "completed": True},
-        {"text": "Women's safety: 2 lakh+ CCTV cameras installed", "completed": True},
-        {"text": "Bus fleet expansion with 1,000+ electric buses", "completed": True},
-        {"text": "24x7 electricity supply across Delhi", "completed": True}
+        {"text": "Improvement of major roads and traffic flow", "completed": True},
+        {"text": "Development of smart infrastructure", "completed": True},
+        {"text": "Better sanitation and waste management", "completed": True},
+        {"text": "Improved civic services delivery", "completed": True},
+        {"text": "Support for digital governance initiatives", "completed": True}
     ],
     
     "upcoming_projects": [
-        {"name": "Delhi-Meerut Expressway", "timeline": "2025", "icon": "🚇", "status": "85% complete"},
-        {"name": "New flyover at Pragati Maidan", "timeline": "2025", "icon": "🛣️", "status": "ongoing"},
-        {"name": "Metro Phase IV expansion", "timeline": "2026", "icon": "🚊", "status": "planned"},
-        {"name": "New super-specialty hospitals", "timeline": "2026", "icon": "🏥", "status": "planned"}
+        {"name": "Road Redevelopment Project", "timeline": "2026", "icon": "🛣️", "status": "In Progress"},
+        {"name": "Smart Infrastructure Upgrade", "timeline": "2026", "icon": "🏗️", "status": "Planned"},
+        {"name": "Public Transport Improvement", "timeline": "2027", "icon": "🚌", "status": "Planned"}
     ],
     
     "contact_info": {
-        "office": "Kaushalya Park, New Delhi - 110001",
-        "phone": "011-23392123",
-        "email": "cm.delhi@nic.in",
+        "office": "New Delhi Constituency Office, Windsor Place, New Delhi",
+        "phone": "9910661000",
+        "email": "office.parveshsahibsingh@gmail.com",
         "website": "delhi.gov.in",
-        "constituency_office": "New Delhi Constituency Office, Kaushalya Park"
+        "constituency_office": "New Delhi Constituency Office, Windsor Place"
     },
     
     "social_media": {
-        "twitter": "@ArvindKejriwal",
-        "facebook": "ArvindKejriwal",
-        "instagram": "arvindkejriwal"
+        "twitter": "@ParveshSahib",
+        "facebook": "ParveshSahibSinghVerma",
+        "instagram": "parveshsahibsingh"
     }
 }
 
@@ -330,7 +328,7 @@ class LocationRequest(BaseModel):
 
 @router.get("/mla")
 def get_mla():
-    """Get MLA data - returns default MLA (New Delhi)"""
+    """Get MLA data - returns default MLA (New Delhi - Parvesh Verma )"""
     return NEW_DELHI_MLA
 
 @router.post("/mla/by-location")

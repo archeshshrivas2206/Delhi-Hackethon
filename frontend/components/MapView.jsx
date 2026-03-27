@@ -316,8 +316,8 @@ export default function MapView({ userLocation, zones = [] }) {
           pathOptions={{
             color: activeZone?.id === zone.id ? "#22c55e" : (zone.color || "#3b82f6"),
             fillColor: activeZone?.id === zone.id ? "#22c55e" : (zone.color || "#3b82f6"),
-            fillOpacity: activeZone?.id === zone.id ? 0.25 : 0.08,  // Lower opacity for non-active
-            weight: activeZone?.id === zone.id ? 3 : 1.5,
+            fillOpacity: activeZone?.id === zone.id ? 0.4 : 0.1,  // Lower opacity for non-active
+            weight: activeZone?.id === zone.id ? 4 : 3,
             opacity: activeZone?.id === zone.id ? 0.8 : 0.4,
           }}
         >
